@@ -1,1 +1,1 @@
-# Slab-allocator - RISCV
+# Slab-allocator for RISC-V kernel
