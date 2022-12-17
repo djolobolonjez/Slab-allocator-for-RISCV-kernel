@@ -23,9 +23,9 @@ void Buddy::buddyInit() {
     size_t powerOfTwoBlocks = greaterPowerOfTwo(numOfBlocks, &MAX_ORDER);
 
     if (powerOfTwoBlocks - numOfBlocks > 0)
-        KERNEL_END_ADDR = (char*) KERNEL_START_ADDR + powerOfTwoBlocks * BLOCK_SIZE;
+        KERNEL_END_ADDR = (char*) KERNEL_START_ADDR + powerOfTwoBlocks * BLOCK_SIZE + (MAX_ORDER + 1) * sizeof (FreeArea*);
     else
-        KERNEL_END_ADDR = (char*)KERNEL_START_ADDR + size;
+        KERNEL_END_ADDR = (char*)KERNEL_START_ADDR + size + (MAX_ORDER + 1) * sizeof (FreeArea*);
 
     HEAP_START_ADDR = (char*)KERNEL_END_ADDR + 1;
 
