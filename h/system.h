@@ -23,6 +23,7 @@
 #define PUTC 0x42
 
 #define MAX_BUFF_SIZE 1024
+#define BLOCK_SIZE (4096)
 
 #define ECALL asm volatile("ecall");
 

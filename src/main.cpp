@@ -5,8 +5,8 @@
 #include "../h/scheduler.h"
 #include "../h/MemoryAllocator.h"
 #include "../h/mmu.h"
+#include "../h/buddy.h"
 
-//#define PAGE_SIZE 4096
 #define UNUSED(x) (void)x
 
 char digits[] = "0123456789ABCDEF";
@@ -40,6 +40,8 @@ void printInt(int xx, int base, int sgn)
 void userMain();
 
 void main(){
+
+    Buddy::buddyInit();
 
     Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 
