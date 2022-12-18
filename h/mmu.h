@@ -7,9 +7,8 @@ static const uint8 PAGE_ORDER = 12;
 static const uint64 PAGE_SIZE = 1 << 12;
 
 class MMU {
-private:
-    uint64* alignAddress(uint64* addr, uint64 order);
 
+private:
     enum EntryBits {
         Valid = 1 << 0,
         Read = 1 << 1,
