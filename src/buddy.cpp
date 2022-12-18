@@ -15,6 +15,15 @@ size_t Buddy::greaterPowerOfTwo(size_t x, int* order) {
     return value;
 }
 
+inline void Buddy::pageAlign() {
+    uint64 mask = (1 << MAX_ORDER) - 1;
+    uint64 startAddr = ((uint64) KERNEL_START_ADDR + mask) & (~mask);
+    uint64 endAddr = ((uint64) KERNEL_END_ADDR + mask) & (~mask);
+
+    KERNEL_START_ADDR = (void*) startAddr;
+    KERNEL_END_ADDR = (void*) endAddr;
+}
+
 void Buddy::buddyInit() {
 
     KERNEL_START_ADDR = (void*)HEAP_START_ADDR;
@@ -27,12 +36,13 @@ void Buddy::buddyInit() {
     else
         KERNEL_END_ADDR = (char*)KERNEL_START_ADDR + size + (MAX_ORDER + 1) * sizeof (FreeArea*);
 
-    HEAP_START_ADDR = (char*)KERNEL_END_ADDR + 1;
-
     blocks = (FreeArea**)KERNEL_START_ADDR;
     KERNEL_START_ADDR = (char*)KERNEL_START_ADDR + (MAX_ORDER + 1) * sizeof (FreeArea*);
     for (int i = 0; i < MAX_ORDER; i++)
         blocks[i] = nullptr;
+
+    pageAlign();
+    HEAP_START_ADDR = (char*)KERNEL_END_ADDR + 1;
 
     blocks[MAX_ORDER] = (FreeArea*) KERNEL_START_ADDR;
     blocks[MAX_ORDER]->next = nullptr;
