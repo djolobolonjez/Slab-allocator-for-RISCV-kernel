@@ -64,7 +64,7 @@ inline void* Buddy::getBlock(int order) {
     return p;
 }
 
-inline void Buddy::split(char *addr, int upper, int lower) {
+inline void Buddy::splitBlock(char *addr, int upper, int lower) {
     while (--upper >= lower) {
         char* newBlk = addr + (1 << upper) * BLOCK_SIZE;
         addBlock(newBlk, upper);
@@ -78,7 +78,7 @@ void* Buddy::alloc(int size) {
     for (int curSize = size; curSize <= MAX_ORDER; curSize++) {
         char* p = (char*) getBlock(curSize);
         if (!p) continue;
-        split(p, curSize, size);
+        splitBlock(p, curSize, size);
         return p;
     }
     return nullptr;

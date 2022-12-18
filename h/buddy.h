@@ -20,7 +20,7 @@ private:
 
     static size_t greaterPowerOfTwo (size_t x, int* order);
 
-    static inline void split(char* addr, int upper, int lower);
+    static inline void splitBlock(char* addr, int upper, int lower);
     static inline void addBlock(char* addr, int order);
     static inline void* getBlock(int order);
     static inline void pageAlign();
