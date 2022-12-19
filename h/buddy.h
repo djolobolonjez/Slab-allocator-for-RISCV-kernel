@@ -20,16 +20,16 @@ private:
 
     static size_t greaterPowerOfTwo (size_t x, int* order);
 
-    static /*inline*/ void splitBlock(char* addr, int upper, int lower);
-    static /*inline*/ void addBlock(char* addr, int order);
-    static /*inline*/ void* getBlock(int order);
-    static /*inline*/ void pageAlign();
-    static /*inline*/ void flipBit(int index);
-    static /*inline*/ void flipParent(void* addr, int order);
-    static /*inline*/ int getIndex(void* addr, int order);
-    static /*inline*/ bool isBuddyFree(int index);
-    static /*inline*/ FreeArea* returnBlock(int size, FreeArea* addr);
-    static /*inline*/ FreeArea* coalesceBuddy(int order, int index, FreeArea* addr);
+    static void splitBlock(char* addr, int upper, int lower);
+    static void addBlock(char* addr, int order);
+    static void* getBlock(int order);
+    static void pageAlign();
+    static void flipBit(int index);
+    static void flipParent(void* addr, int order);
+    static int getIndex(void* addr, int order);
+    static bool isBuddyFree(int index);
+    static FreeArea* returnBlock(int size, FreeArea* addr);
+    static FreeArea* coalesceBuddy(int order, int index, FreeArea* addr);
 
 public:
     static void buddyInit();
