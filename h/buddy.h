@@ -25,13 +25,16 @@ private:
     static /*inline*/ void* getBlock(int order);
     static /*inline*/ void pageAlign();
     static /*inline*/ void flipBit(int index);
-    static /*inline*/ void flipParent(char* addr, int order);
-    static /*inline*/ int getIndex(char* addr, int order);
+    static /*inline*/ void flipParent(void* addr, int order);
+    static /*inline*/ int getIndex(void* addr, int order);
+    static /*inline*/ bool isBuddyFree(int index);
+    static /*inline*/ FreeArea* returnBlock(int size, FreeArea* addr);
+    static /*inline*/ FreeArea* coalesceBuddy(int order, int index, FreeArea* addr);
 
 public:
     static void buddyInit();
-    static void* alloc(int size);
-    static void free (void* addr);
+    static void* alloc(int order);
+    static int free (void* addr, int order);
 
 };
 

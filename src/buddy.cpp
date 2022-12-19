@@ -51,10 +51,10 @@ void Buddy::buddyInit() {
     blocks[MAX_ORDER]->next = nullptr;
 }
 
-/*inline*/ int Buddy::getIndex(char* addr, int order) {
+/*inline*/ int Buddy::getIndex(void* addr, int order) {
 
     int entryIndex = (1 << MAX_ORDER) - (1 << (MAX_ORDER - order));
-    size_t entryAddr = addr - (char*)KERNEL_START_ADDR;
+    size_t entryAddr = (char*)addr - (char*)KERNEL_START_ADDR;
     int offset = entryAddr >> (MAX_ORDER + order + 1);
 
     return entryIndex + offset;
@@ -62,6 +62,11 @@ void Buddy::buddyInit() {
 
 /*inline*/ void Buddy::flipBit(int index) {
     bitmap[index / 8] ^= (1 << (index % 8));
+}
+
+/*inline*/ bool Buddy::isBuddyFree(int index) {
+    uint8 mask = (1 << (index % 8));
+    return (bitmap[index / 8] & mask) == 0;
 }
 
 /*inline*/ void Buddy::addBlock(char *addr, int order) {
@@ -80,11 +85,50 @@ void Buddy::buddyInit() {
     return p;
 }
 
-/*inline*/ void Buddy::flipParent(char* addr, int order) {
+/*inline*/ void Buddy::flipParent(void* addr, int order) {
     if (order < MAX_ORDER) {
         int index = getIndex(addr, order);
         flipBit(index);
     }
+}
+
+/*inline*/ Buddy::FreeArea* Buddy::coalesceBuddy(int order, int index, FreeArea *addr) {
+
+    FreeArea* prev = nullptr, * curr = blocks[order];
+    while (curr) {
+        int ind = getIndex(curr, order);
+        if (ind == index) {
+            if (!prev) blocks[order] = curr->next;
+            else prev->next = curr->next;
+
+            break;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+
+    FreeArea* ret = (addr > curr ? curr : addr);
+    return ret;
+}
+
+/*inline*/ Buddy::FreeArea* Buddy::returnBlock(int order, FreeArea *addr) {
+
+    addr->next = nullptr;
+    int index = getIndex(addr, order);
+    flipBit(index);
+
+    if (!blocks[order]) {
+        blocks[order] = addr;
+        return nullptr;
+    }
+
+    if (isBuddyFree(index))
+        return coalesceBuddy(order, index, addr);
+
+    addr->next = blocks[order];
+    blocks[order] = addr;
+
+    return nullptr;
 }
 
 /*inline*/ void Buddy::splitBlock(char *addr, int upper, int lower) {
@@ -97,16 +141,32 @@ void Buddy::buddyInit() {
     }
 }
 
-void* Buddy::alloc(int size) {
-    if (size < 0 || size > MAX_ORDER)
+void* Buddy::alloc(int order) {
+    if (order < 0 || order > MAX_ORDER)
         return nullptr; // bad alloc - invalid size!
 
-    for (int curSize = size; curSize <= MAX_ORDER; curSize++) {
+    for (int curSize = order; curSize <= MAX_ORDER; curSize++) {
         char* p = (char*) getBlock(curSize);
         if (!p) continue;
-        splitBlock(p, curSize, size);
-        if (size != MAX_ORDER) flipBit(getIndex(p, size));
+        splitBlock(p, curSize, order);
+        if (order != MAX_ORDER) flipBit(getIndex(p, order));
         return p;
     }
     return nullptr;
+}
+
+int Buddy::free(void *addr, int order) {
+    if (addr == nullptr) {
+        return -1; // Exception
+    }
+
+    FreeArea* curAddr = (FreeArea*) addr, * freeAddr;
+
+    for (int curSize = order; curSize <= MAX_ORDER; curSize++) {
+        freeAddr = returnBlock(curSize, curAddr);
+        if (freeAddr) curAddr = freeAddr;
+        else break;
+    }
+
+    return 0;
 }

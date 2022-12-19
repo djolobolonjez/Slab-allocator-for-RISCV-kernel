@@ -43,6 +43,10 @@ void main(){
 
     Buddy::buddyInit();
 
+    char* blk = (char*) Buddy::alloc(0);
+    Buddy::free(blk, 0);
+    Buddy::alloc(5);
+
     Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 
     KernelConsole* instance = KernelConsole::getInstance();
