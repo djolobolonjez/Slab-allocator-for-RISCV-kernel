@@ -1,5 +1,5 @@
-#ifndef _system_h
-#define _system_h
+#ifndef system_h
+#define system_h
 
 #include "../lib/hw.h"
 #include "defs.h"
@@ -65,4 +65,4 @@
 #define C_READ *(char*)CONSOLE_RX_DATA
 
 
-#endif
+#endif // system_h

@@ -1,5 +1,5 @@
-#ifndef _scheduler_h
-#define _scheduler_h
+#ifndef scheduler_h
+#define scheduler_h
 
 class TCB;
 
@@ -27,4 +27,4 @@ public:
 
 
 
-#endif
+#endif // scheduler_h

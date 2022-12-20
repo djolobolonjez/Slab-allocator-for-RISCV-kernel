@@ -1,5 +1,5 @@
-#ifndef _riscv_h
-#define _riscv_h
+#ifndef riscv_h
+#define riscv_h
 
 #include "../lib/hw.h"
 
@@ -72,4 +72,4 @@ private:
 
 };
 
-#endif
+#endif // riscv_h

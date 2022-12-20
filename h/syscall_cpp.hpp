@@ -1,5 +1,5 @@
-#ifndef _syscall_cpp
-#define _syscall_cpp
+#ifndef syscall_cpp
+#define syscall_cpp
 
 #include "syscall_c.h"
 
@@ -60,4 +60,4 @@ public:
 };
 
 
-#endif
+#endif // syscall_cpp

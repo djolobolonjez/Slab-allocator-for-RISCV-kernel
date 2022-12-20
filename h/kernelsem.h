@@ -1,5 +1,5 @@
-#ifndef _KERNEL_SEM_H
-#define _KERNEL_SEM_H
+#ifndef KERNEL_SEM_H
+#define KERNEL_SEM_H
 
 #include "../lib/hw.h"
 
@@ -51,4 +51,4 @@ private:
 };
 
 
-#endif
+#endif // KERNEL_SEM_H

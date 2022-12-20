@@ -1,5 +1,5 @@
-#ifndef _syscall_c
-#define _syscall_c
+#ifndef syscall_c
+#define syscall_c
 
 #include "system.h"
 
@@ -44,4 +44,4 @@ void
 putc(char);
 
 
-#endif
+#endif // syscall_c

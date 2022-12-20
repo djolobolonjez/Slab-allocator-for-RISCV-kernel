@@ -1,5 +1,5 @@
-#ifndef _sleeping_h
-#define _sleeping_h
+#ifndef sleeping_h
+#define sleeping_h
 
 #include "../lib/hw.h"
 
@@ -29,4 +29,4 @@ public:
 };
 
 
-#endif
+#endif // sleeping_h

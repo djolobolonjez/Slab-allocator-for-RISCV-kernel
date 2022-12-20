@@ -1,5 +1,5 @@
-#ifndef _MMU_H
-#define _MMU_H
+#ifndef MMU_H
+#define MMU_H
 
 #include "../lib/hw.h"
 
@@ -32,4 +32,4 @@ private:
 
 
 
-#endif // _MMU_H
+#endif // MMU_H

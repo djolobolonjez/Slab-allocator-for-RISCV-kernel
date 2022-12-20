@@ -1,5 +1,5 @@
-#ifndef _kernelcons_h
-#define _kernelcons_h
+#ifndef kernelcons_h
+#define kernelcons_h
 
 #include "../h/syscall_c.h"
 
@@ -40,4 +40,4 @@ public:
 
 };
 
-#endif
+#endif // kernelcons_h

@@ -1,5 +1,5 @@
-#ifndef _tcb_h
-#define _tcb_h
+#ifndef tcb_h
+#define tcb_h
 
 
 #include "../h/MemoryAllocator.h"
@@ -100,4 +100,4 @@ private:
 
 };
 
-#endif
+#endif // tcb_h

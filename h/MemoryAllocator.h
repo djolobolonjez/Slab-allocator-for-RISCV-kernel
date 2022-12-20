@@ -1,5 +1,5 @@
-#ifndef _memory_allocator_cpp
-#define _memory_allocator_cpp
+#ifndef memory_allocator_h
+#define memory_allocator_h
 
 #include "../lib/hw.h"
 
@@ -35,4 +35,4 @@ public:
 
 
 
-#endif
+#endif // memory_allocator_h
