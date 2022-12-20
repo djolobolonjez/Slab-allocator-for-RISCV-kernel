@@ -1,5 +1,5 @@
-#ifndef _BUDDY_H
-#define _BUDDY_H
+#ifndef BUDDY_H
+#define BUDDY_H
 
 #include "../lib/hw.h"
 
@@ -32,11 +32,12 @@ private:
     static FreeArea* coalesceBuddy(int order, int index, FreeArea* addr);
 
 public:
-    static void buddyInit();
+    static int getBlockNum();
+    static int buddyInit(void* space, int blockNum);
     static void* alloc(int order);
     static int free (void* addr, int order);
 
 };
 
 
-#endif // _BUDDY_H
+#endif // BUDDY_H

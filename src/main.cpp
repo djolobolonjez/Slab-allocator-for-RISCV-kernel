@@ -3,9 +3,8 @@
 #include "../h/syscall_cpp.hpp"
 #include "../h/kernelcons.h"
 #include "../h/scheduler.h"
-#include "../h/MemoryAllocator.h"
-#include "../h/mmu.h"
 #include "../h/buddy.h"
+#include "../h/slab.h"
 
 #define UNUSED(x) (void)x
 
@@ -41,11 +40,20 @@ void userMain();
 
 void main(){
 
-    Buddy::buddyInit();
+    int blockNum = Buddy::getBlockNum();
+    void* space = (void*) (HEAP_START_ADDR);
+
+    kmem_init(space, blockNum);
 
     char* blk = (char*) Buddy::alloc(0);
+    char* blk2 = (char*) Buddy::alloc(0);
+    char* blk3 = (char*) Buddy::alloc(1);
+    char* blk4 = (char*) Buddy::alloc(1);
+
     Buddy::free(blk, 0);
-    Buddy::alloc(5);
+    Buddy::free(blk2, 0);
+    Buddy::free(blk3, 1);
+    Buddy::free(blk4, 1);
 
     Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 
