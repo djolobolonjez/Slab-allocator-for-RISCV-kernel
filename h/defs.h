@@ -1,12 +1,16 @@
-#ifndef _defs_h
-#define _defs_h
+#ifndef defs_h
+#define defs_h
 
 const int EOF = -1;
+
+class Cache;
 
 class TCB;
 class KernelSem;
 class Thread;
 class PeriodicThread;
+
+typedef Cache kmem_cache_t;
 
 typedef KernelSem* sem_t;
 
@@ -36,4 +40,4 @@ struct user_main_ {
 
 
 
-#endif
+#endif // defs_h
