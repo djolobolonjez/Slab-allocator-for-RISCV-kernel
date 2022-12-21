@@ -6,36 +6,6 @@
 #include "../h/buddy.h"
 #include "../h/slab.h"
 
-#define UNUSED(x) (void)x
-
-char digits[] = "0123456789ABCDEF";
-
-void printInt(int xx, int base, int sgn)
-{
-    char buf[16];
-    int i, neg;
-    uint x;
-
-    neg = 0;
-    if(sgn && xx < 0){
-        neg = 1;
-        x = -xx;
-    } else {
-        x = xx;
-    }
-
-    i = 0;
-    do{
-        buf[i++] = digits[x % base];
-    }while((x /= base) != 0);
-    if(neg)
-        buf[i++] = '-';
-
-    while(--i >= 0)
-        putc(buf[i]);
-
-}
-
 void userMain();
 
 void main(){
