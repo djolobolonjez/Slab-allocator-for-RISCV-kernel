@@ -5,6 +5,8 @@
 #include "../h/scheduler.h"
 #include "../h/buddy.h"
 #include "../h/slab.h"
+#include "../h/CachePool.h"
+#include "../h/cache.h"
 
 void userMain();
 
@@ -15,7 +17,13 @@ void main(){
 
     kmem_init(space, blockNum);
 
-    char* blk = (char*) Buddy::alloc(0);
+    Cache* handle1 = CachePool::allocateSlot();
+    handle1->flag = 0;
+
+    Cache* handle2 = CachePool::allocateSlot();
+    handle2->flag = 0;
+
+    /*char* blk = (char*) Buddy::alloc(0);
     char* blk2 = (char*) Buddy::alloc(0);
     char* blk3 = (char*) Buddy::alloc(1);
     char* blk4 = (char*) Buddy::alloc(1);
@@ -23,7 +31,7 @@ void main(){
     Buddy::free(blk, 0);
     Buddy::free(blk2, 0);
     Buddy::free(blk3, 1);
-    Buddy::free(blk4, 1);
+    Buddy::free(blk4, 1);*/
 
     Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 

@@ -6,7 +6,7 @@
 class Slab;
 
 class Cache {
-
+private:
     const char* name;
     size_t objSize;
     void (*ctor)(void*);
@@ -18,6 +18,10 @@ class Cache {
     int shrink;
     int slabSize;
     int objNum; // number of objects in one slab
+
+    friend class CachePool;
+public:
+    int flag = 0;
 
 };
 
