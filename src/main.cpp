@@ -5,7 +5,6 @@
 #include "../h/scheduler.h"
 #include "../h/buddy.h"
 #include "../h/slab.h"
-#include "../h/CachePool.h"
 #include "../h/cache.h"
 
 void userMain();
@@ -17,11 +16,9 @@ void main(){
 
     kmem_init(space, blockNum);
 
-    Cache* handle1 = CachePool::allocateSlot();
-    handle1->flag = 0;
+    kmem_cache_t* handle1 = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
 
-    Cache* handle2 = CachePool::allocateSlot();
-    handle2->flag = 0;
+    kmem_cache_destroy(handle1);
 
     /*char* blk = (char*) Buddy::alloc(0);
     char* blk2 = (char*) Buddy::alloc(0);

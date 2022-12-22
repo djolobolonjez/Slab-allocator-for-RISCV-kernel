@@ -6,20 +6,26 @@ class Cache;
 class CachePool {
 
 private:
-    struct CacheEvidence {
+    struct CacheRecord {
         int numOfSlots;
-        CacheEvidence* next;
+        int numOfFreeSlots;
+        CacheRecord* next;
+
         Cache* freeSlot;
         Cache* slots;
     };
 
-    static CacheEvidence* head, *tail;
+    static CacheRecord* head, *tail;
     static Cache* cacheHead, *cacheTail;
 
-    static CacheEvidence* createEvidence();
+    static CacheRecord* createRecord();
+    static void destroyRecord(CacheRecord* record);
+
+    friend class Cache;
 public:
     static void CachePoolInit();
     static Cache* allocateSlot();
+    static void deallocateSlot(Cache* handle);
 };
 
 #endif // CACHE_POOL_H

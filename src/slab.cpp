@@ -1,6 +1,6 @@
 #include "../h/slab.h"
 #include "../h/buddy.h"
-#include "../h/CachePool.h"
+#include "../h/cache.h"
 
 void kmem_init(void* space, int block_num) {
 
@@ -9,4 +9,15 @@ void kmem_init(void* space, int block_num) {
 
     CachePool::CachePoolInit();
         
+}
+
+kmem_cache_t* kmem_cache_create(const char* name, size_t size,
+                                void (*ctor)(void*),
+                                void (*dtor)(void*)) {
+
+    return new Cache(name, size, ctor, dtor);
+}
+
+void kmem_cache_destroy(kmem_cache_t* cachep) {
+    delete cachep;
 }
