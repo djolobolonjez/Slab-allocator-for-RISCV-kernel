@@ -6,6 +6,7 @@
 #include "../h/buddy.h"
 #include "../h/slab.h"
 #include "../h/cache.h"
+#include "../h/SlabAllocator.h"
 
 void userMain();
 
@@ -16,9 +17,11 @@ void main(){
 
     kmem_init(space, blockNum);
 
-    kmem_cache_t* handle1 = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
+    kmem_cache_t* handle = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
 
-    kmem_cache_destroy(handle1);
+    Slab::createSlab(0, handle);
+
+    kmem_cache_destroy(handle);
 
     /*char* blk = (char*) Buddy::alloc(0);
     char* blk2 = (char*) Buddy::alloc(0);

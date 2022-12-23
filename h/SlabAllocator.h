@@ -5,20 +5,19 @@
 
 class Cache;
 
-class SlabAllocator {
+class Slab {
 private:
-    struct Slab {
-        Cache* owner;
-        Slab* next, *prev;
 
-        void* mem;
-        int free;
+    Cache* owner;
+    Slab* next, *prev;
 
-        int* freeArray;
+    void* mem;
+    unsigned free;
 
-        size_t numOfSlots;
-        size_t numOfFreeSlots;
-    };
+    unsigned* freeArray;
+
+    size_t numOfSlots;
+    size_t numOfFreeSlots;
 
     friend class Cache;
 public:

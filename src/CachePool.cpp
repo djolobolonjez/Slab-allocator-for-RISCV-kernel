@@ -69,6 +69,8 @@ Cache* CachePool::allocateSlot() {
 
 void CachePool::deallocateSlot(Cache *handle) {
 
+    // TODO - Free all slabs before deallocating cache itself
+
     if (handle->prev == nullptr) {
         cacheHead = cacheHead->next;
         if (!cacheHead) cacheTail = nullptr;

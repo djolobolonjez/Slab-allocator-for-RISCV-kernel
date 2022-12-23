@@ -13,7 +13,7 @@ private:
     void (*dtor)(void*);
 
     Cache* next, *prev;
-    SlabAllocator::Slab* slabsFull, *slabsPartial, *slabsFree;
+    Slab* slabsFull, *slabsPartial, *slabsFree;
 
     CachePool::CacheRecord* myRecord;
 
@@ -28,12 +28,12 @@ private:
     static size_t getNumberOfObjects(size_t slabSize, size_t slotSize);
 
     friend class CachePool;
-    friend class SlabAllocator;
+    friend class Slab;
 public:
     Cache(const char* name, size_t size, void (*ctor)(void*), void (*dtor)(void*));
 
     void* cacheAlloc();
-    void setEmptyToPartial(SlabAllocator::Slab* slab);
+    void setEmptyToPartial(Slab* slab);
 
     void* operator new(size_t size);
     void operator delete(void* addr);

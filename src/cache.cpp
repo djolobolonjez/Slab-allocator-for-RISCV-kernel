@@ -50,22 +50,24 @@ size_t Cache::estimateOrder(size_t slotSize) {
 
 size_t Cache::getNumberOfObjects(size_t slabSize, size_t slotSize) {
     int numObj = 0;
-    while (numObj * slotSize + numObj * sizeof(unsigned) + sizeof (SlabAllocator::Slab) <= slabSize)
+    while (numObj * slotSize + numObj * sizeof(unsigned) + sizeof (Slab) <= slabSize)
         numObj++;
 
     return numObj - 1;
 }
 
-void Cache::setEmptyToPartial(SlabAllocator::Slab* slab) {
+void Cache::setEmptyToPartial(Slab* slab) {
 
 }
 
 void* Cache::cacheAlloc() {
 
     if (this->slabsPartial == nullptr && this->slabsFree == nullptr)
-        SlabAllocator::createSlab(this->slabOrder, this);
+        Slab::createSlab(this->slabOrder, this);
     else {
         if (this->slabsPartial == nullptr) {}
             //setEmptyToPartial();
     }
+
+    return nullptr;
 }
