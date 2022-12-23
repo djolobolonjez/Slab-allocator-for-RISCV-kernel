@@ -1,19 +1,28 @@
 #ifndef SLAB_ALLOCATOR_H
 #define SLAB_ALLOCATOR_H
 
+#include "../lib/hw.h"
+
 class Cache;
 
-class Slab {
+class SlabAllocator {
 private:
-    Cache* owner;
-    Slab* next, *prev;
+    struct Slab {
+        Cache* owner;
+        Slab* next, *prev;
 
-    void* slots;
+        void* mem;
+        int free;
 
-    int numOfSlots;
-    int numOfFreeSlots;
+        int* freeArray;
 
-    char* isFree;
+        size_t numOfSlots;
+        size_t numOfFreeSlots;
+    };
+
+    friend class Cache;
+public:
+    static void createSlab(size_t size, Cache* handle);
 };
 
 #endif // SLAB_ALLOCATOR_H

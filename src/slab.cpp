@@ -18,6 +18,12 @@ kmem_cache_t* kmem_cache_create(const char* name, size_t size,
     return new Cache(name, size, ctor, dtor);
 }
 
+void* kmem_cache_alloc(kmem_cache_t* cachep) {
+    return cachep->cacheAlloc();
+}
+
+
 void kmem_cache_destroy(kmem_cache_t* cachep) {
     delete cachep;
 }
+

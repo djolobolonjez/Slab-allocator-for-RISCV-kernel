@@ -19,25 +19,25 @@ void CachePool::CachePoolInit() {
 
 CachePool::CacheRecord* CachePool::createRecord() {
 
-    CacheRecord* newEvidence = (CacheRecord*) Buddy::alloc(0);
-    if (!newEvidence) return nullptr; // No available memory
+    CacheRecord* newRecord = (CacheRecord*) Buddy::alloc(0);
+    if (!newRecord) return nullptr; // No available memory
 
-    newEvidence->next = nullptr;
-    newEvidence->numOfSlots = 0;
-    while (newEvidence->numOfSlots * sizeof(Cache) + sizeof(CacheRecord) <= BLOCK_SIZE)
-        newEvidence->numOfSlots++;
+    newRecord->next = nullptr;
+    newRecord->numOfSlots = 0;
+    while (newRecord->numOfSlots * sizeof(Cache) + sizeof(CacheRecord) <= BLOCK_SIZE)
+        newRecord->numOfSlots++;
 
-    newEvidence->numOfSlots--;
-    newEvidence->numOfFreeSlots = newEvidence->numOfSlots;
+    newRecord->numOfSlots--;
+    newRecord->numOfFreeSlots = newRecord->numOfSlots;
 
-    newEvidence->slots = (Cache*) ((char*)newEvidence + sizeof(CacheRecord));
-    newEvidence->freeSlot = newEvidence->slots;
+    newRecord->slots = (Cache*) ((char*)newRecord + sizeof(CacheRecord));
+    newRecord->freeSlot = newRecord->slots;
 
-    for (int i = 0; i < newEvidence->numOfSlots - 1; i++)
-        *(Cache**)(&newEvidence->slots[i]) = &newEvidence->slots[i + 1];
-    *(Cache**)(&newEvidence->slots[newEvidence->numOfSlots - 1]) = nullptr;
+    for (int i = 0; i < newRecord->numOfSlots - 1; i++)
+        *(Cache**)(&newRecord->slots[i]) = &newRecord->slots[i + 1];
+    *(Cache**)(&newRecord->slots[newRecord->numOfSlots - 1]) = nullptr;
 
-    return newEvidence;
+    return newRecord;
 
 }
 
