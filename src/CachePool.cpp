@@ -59,7 +59,6 @@ Cache* CachePool::allocateSlot() {
         return nullptr; // No memory
 
     ret = curr->freeSlot;
-    ret->myRecord = curr;
 
     curr->freeSlot = *(Cache**)curr->freeSlot;
     curr->numOfFreeSlots--;
@@ -88,7 +87,9 @@ void CachePool::deallocateSlot(Cache *handle) {
     }
     handle->next = handle->prev = nullptr;
 
-    CacheRecord* record = handle->myRecord;
+    uint64 mask = ~0UL << 12;
+    CacheRecord* record = (CacheRecord*) ((uint64)handle & mask);
+
     *(Cache**)handle = record->freeSlot;
     record->freeSlot = handle;
 

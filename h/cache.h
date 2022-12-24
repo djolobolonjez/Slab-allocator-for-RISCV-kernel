@@ -3,9 +3,16 @@
 
 #include "../lib/hw.h"
 #include "../h/CachePool.h"
-#include "../h/SlabAllocator.h"
+
+class Slab;
 
 class Cache {
+public:
+    enum SlabGroup {
+        FULL,
+        PARTIAL,
+        FREE
+    };
 private:
     const char* name;
     size_t slotSize;
@@ -14,8 +21,6 @@ private:
 
     Cache* next, *prev;
     Slab* slabsFull, *slabsPartial, *slabsFree;
-
-    CachePool::CacheRecord* myRecord;
 
     int shrink;
     size_t slabSize;
@@ -32,8 +37,13 @@ private:
 public:
     Cache(const char* name, size_t size, void (*ctor)(void*), void (*dtor)(void*));
 
+    void setShrink(int _shrink) { this->shrink = _shrink; }
+
     void* cacheAlloc();
-    void setEmptyToPartial(Slab* slab);
+    void cacheFree(void* objp);
+
+    void moveFree(Slab* slab, SlabGroup grp);
+    void moveSlab(Slab* slab, SlabGroup grp);
 
     void* operator new(size_t size);
     void operator delete(void* addr);

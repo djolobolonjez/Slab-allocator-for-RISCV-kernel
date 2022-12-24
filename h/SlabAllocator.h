@@ -2,8 +2,7 @@
 #define SLAB_ALLOCATOR_H
 
 #include "../lib/hw.h"
-
-class Cache;
+#include "../h/cache.h"
 
 class Slab {
 private:
@@ -19,9 +18,15 @@ private:
     size_t numOfSlots;
     size_t numOfFreeSlots;
 
+    Cache::SlabGroup group;
+
     friend class Cache;
 public:
     static void createSlab(size_t size, Cache* handle);
+    // TODO - implementirati destroySlab zbog cacheDestroy poziva
+    static void* takeObject(Slab* slab);
+    static void putObject(void* objp);
+
 };
 
 #endif // SLAB_ALLOCATOR_H

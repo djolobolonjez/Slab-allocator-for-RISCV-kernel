@@ -19,7 +19,10 @@ void main(){
 
     kmem_cache_t* handle = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
 
-    Slab::createSlab(0, handle);
+    TCB* thread_one = (TCB*) kmem_cache_alloc(handle);
+    TCB* thread_two = (TCB*) kmem_cache_alloc(handle);
+    kmem_cache_free(handle, thread_one);
+    kmem_cache_free(handle, thread_two);
 
     kmem_cache_destroy(handle);
 
