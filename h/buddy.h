@@ -20,8 +20,8 @@ private:
 
     static size_t greaterPowerOfTwo (size_t x, int* order);
 
-    static void splitBlock(char* addr, int upper, int lower);
-    static void addBlock(char* addr, int order);
+    static void splitBlock(uint8* addr, int upper, int lower);
+    static void addBlock(uint8* addr, int order);
     static void* getBlock(int order);
     static void pageAlign();
     static void flipBit(int index);

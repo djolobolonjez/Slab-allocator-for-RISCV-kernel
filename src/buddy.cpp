@@ -17,7 +17,7 @@ size_t Buddy::greaterPowerOfTwo(size_t x, int* order) {
 }
 
 int Buddy::getBlockNum() {
-    size_t size = ((char*)HEAP_END_ADDR - (char*)HEAP_START_ADDR) * 125 / 1000;
+    size_t size = ((uint8*)HEAP_END_ADDR - (uint8*)HEAP_START_ADDR) * 125 / 1000;
     int numOfBlocks = size / BLOCK_SIZE;
     return greaterPowerOfTwo(numOfBlocks, &MAX_ORDER);
 }
@@ -37,19 +37,19 @@ int Buddy::buddyInit(void* space, int blockNum) {
 
     KERNEL_START_ADDR = space;
 
-    KERNEL_END_ADDR = (char*) KERNEL_START_ADDR + blockNum * BLOCK_SIZE + (MAX_ORDER + 1) * sizeof (FreeArea*) + (1 << MAX_ORDER) / sizeof(uint8*);
+    KERNEL_END_ADDR = (uint8*) KERNEL_START_ADDR + blockNum * BLOCK_SIZE + (MAX_ORDER + 1) * sizeof (FreeArea*) + (1 << MAX_ORDER) / sizeof(uint8*);
 
     if (KERNEL_END_ADDR >= HEAP_END_ADDR || blockNum > (1 << MAX_ORDER)) return -1;
 
     blocks = (FreeArea**)KERNEL_START_ADDR;
-    bitmap = (uint8*) ((char*) KERNEL_START_ADDR + (MAX_ORDER + 1) * sizeof(FreeArea*));
+    bitmap = (uint8*) ((uint8*) KERNEL_START_ADDR + (MAX_ORDER + 1) * sizeof(FreeArea*));
 
-    KERNEL_START_ADDR = (char*)KERNEL_START_ADDR + (MAX_ORDER + 1) * sizeof (FreeArea*) + (1 << MAX_ORDER) / sizeof(uint8*);
+    KERNEL_START_ADDR = (uint8*)KERNEL_START_ADDR + (MAX_ORDER + 1) * sizeof (FreeArea*) + (1 << MAX_ORDER) / sizeof(uint8*);
     for (int i = 0; i < MAX_ORDER; i++)
         blocks[i] = nullptr;
 
     pageAlign();
-    HEAP_START_ADDR = (char*)KERNEL_END_ADDR + 1;
+    HEAP_START_ADDR = (uint8*)KERNEL_END_ADDR + 1;
 
     blocks[MAX_ORDER] = (FreeArea*) KERNEL_START_ADDR;
     blocks[MAX_ORDER]->next = nullptr;
@@ -60,7 +60,7 @@ int Buddy::buddyInit(void* space, int blockNum) {
 int Buddy::getIndex(void* addr, int order) {
 
     int entryIndex = (1 << MAX_ORDER) - (1 << (MAX_ORDER - order));
-    size_t entryAddr = (char*)addr - (char*)KERNEL_START_ADDR;
+    size_t entryAddr = (uint8*)addr - (uint8*)KERNEL_START_ADDR;
     int offset = entryAddr >> (MAX_ORDER + order + 1);
 
     return entryIndex + offset;
@@ -75,7 +75,7 @@ bool Buddy::isBuddyFree(int index) {
     return (bitmap[index / 8] & mask) == 0;
 }
 
-void Buddy::addBlock(char *addr, int order) {
+void Buddy::addBlock(uint8 *addr, int order) {
     FreeArea* blk = (FreeArea*) addr;
     blk->next = blocks[order];
     blocks[order] = blk;
@@ -105,8 +105,7 @@ Buddy::FreeArea* Buddy::coalesceBuddy(int order, int index, FreeArea *addr) {
             curr->next = nullptr;
             break;
         }
-        prev = curr;
-        curr = curr->next;
+        prev = curr, curr = curr->next;
     }
 
     FreeArea* ret = (addr > curr ? curr : addr);
@@ -129,9 +128,9 @@ Buddy::FreeArea* Buddy::returnBlock(int order, FreeArea *addr) {
     return nullptr;
 }
 
-void Buddy::splitBlock(char *addr, int upper, int lower) {
+void Buddy::splitBlock(uint8 *addr, int upper, int lower) {
     while (--upper >= lower) {
-        char* newBlk = addr + (1 << upper) * BLOCK_SIZE;
+        uint8* newBlk = addr + (1 << upper) * BLOCK_SIZE;
         addBlock(newBlk, upper);
         flipParent(addr, upper + 1);
     }
@@ -142,7 +141,7 @@ void* Buddy::alloc(int order) {
         return nullptr; // bad alloc - invalid size!
 
     for (int curSize = order; curSize <= MAX_ORDER; curSize++) {
-        char* p = (char*) getBlock(curSize);
+        uint8* p = (uint8*) getBlock(curSize);
         if (!p) continue;
         splitBlock(p, curSize, order);
         if (order != MAX_ORDER) flipBit(getIndex(p, order));

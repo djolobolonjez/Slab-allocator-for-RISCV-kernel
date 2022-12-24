@@ -40,11 +40,7 @@ void Cache::operator delete(void *addr)  {
 }
 
 size_t Cache::estimateOrder(size_t slotSize) {
-    size_t slabOrder;
-    if (slotSize > BLOCK_SIZE)
-        slabOrder = slotSize / BLOCK_SIZE;
-    else
-        slabOrder = 0;
+    size_t slabOrder = (slotSize > BLOCK_SIZE ? slotSize / BLOCK_SIZE : 0);
 
     return slabOrder;
 }

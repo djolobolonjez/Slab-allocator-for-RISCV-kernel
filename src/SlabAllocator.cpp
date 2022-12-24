@@ -26,7 +26,7 @@ void Slab::createSlab(size_t size, Cache* handle) {
 
     if (handle->ctor)
         for (unsigned i = 0; i < handle->objNum; i++) {
-            void* addr = (void*) ((char*)newSlab->mem + i * handle->slotSize);
+            void* addr = (void*) ((uint8*)newSlab->mem + i * handle->slotSize);
             handle->ctor(addr);
         }
 
@@ -35,7 +35,7 @@ void Slab::createSlab(size_t size, Cache* handle) {
 
 void* Slab::takeObject(Slab* slab) {
 
-    void* objp = (char*)slab->mem + slab->free * slab->owner->slotSize;
+    void* objp = (uint8*)slab->mem + slab->free * slab->owner->slotSize;
     slab->free = slab->freeArray[slab->free];
 
     slab->numOfFreeSlots--;
@@ -61,7 +61,7 @@ void Slab::putObject(void *objp) {
     }
 
     slabHeader->numOfFreeSlots++;
-    unsigned index = ((char*)slabObject - (char*)slabHeader->mem) / (slabHeader->owner->slotSize);
+    unsigned index = ((uint8*)slabObject - (uint8*)slabHeader->mem) / (slabHeader->owner->slotSize);
     slabHeader->freeArray[index] = slabHeader->free;
     slabHeader->free = index;
 }

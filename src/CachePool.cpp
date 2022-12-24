@@ -30,7 +30,7 @@ CachePool::CacheRecord* CachePool::createRecord() {
     newRecord->numOfSlots--;
     newRecord->numOfFreeSlots = newRecord->numOfSlots;
 
-    newRecord->slots = (Cache*) ((char*)newRecord + sizeof(CacheRecord));
+    newRecord->slots = (Cache*) ((uint8*)newRecord + sizeof(CacheRecord));
     newRecord->freeSlot = newRecord->slots;
 
     for (int i = 0; i < newRecord->numOfSlots - 1; i++)
@@ -102,10 +102,9 @@ void CachePool::deallocateSlot(Cache *handle) {
 void CachePool::destroyRecord(CacheRecord* record) {
 
     CacheRecord* curr = head, *prev = nullptr;
-    while (curr != record) {
-        prev = curr;
-        curr = curr->next;
-    }
+
+    while (curr != record)
+        prev = curr, curr = curr->next;
 
     prev->next = curr->next;
     if (curr == tail) tail = prev;
