@@ -6,7 +6,7 @@ int MemoryAllocator::init = 0;
 int MemoryAllocator::tryToJoin(BlockHeader* curr) {
 
     if(!curr) return 0;
-    if(curr->next && (char*)curr + curr->size + sizeof(BlockHeader) == (char*)curr->next){
+    if(curr->next && (uint8*)curr + curr->size + sizeof(BlockHeader) == (uint8*)curr->next){
         curr->size += (curr->next->size + sizeof(BlockHeader));
         curr->next = curr->next->next;
         if(curr->next) curr->next->prev = curr;
@@ -21,7 +21,7 @@ void* MemoryAllocator::kmem_alloc(size_t size){
         MemoryAllocator::fmem_head = (BlockHeader*)HEAP_START_ADDR;
         MemoryAllocator::fmem_head->next = nullptr;
         MemoryAllocator::fmem_head->prev = nullptr;
-        MemoryAllocator::fmem_head->size = (char*)HEAP_END_ADDR - (char*)HEAP_START_ADDR - sizeof(BlockHeader);
+        MemoryAllocator::fmem_head->size = (uint8*)HEAP_END_ADDR - (uint8*)HEAP_START_ADDR - sizeof(BlockHeader);
         MemoryAllocator::init = 1;
     }
 
@@ -37,7 +37,7 @@ void* MemoryAllocator::kmem_alloc(size_t size){
     if(remainder > sizeof(BlockHeader)) {
         curr->size = size * MEM_BLOCK_SIZE;
         size_t offset = sizeof(BlockHeader) + size * MEM_BLOCK_SIZE;
-        BlockHeader* newBlock = (BlockHeader*) ((char*) curr + offset);
+        BlockHeader* newBlock = (BlockHeader*) ((uint8*) curr + offset);
         if(curr->prev){
             curr->prev->next = newBlock;
             newBlock->prev = curr->prev;
@@ -50,7 +50,7 @@ void* MemoryAllocator::kmem_alloc(size_t size){
         if(newBlock->next) newBlock->next->prev = newBlock;
         newBlock->size = remainder - sizeof(BlockHeader);
 
-        if((char*)newBlock >= (char*)HEAP_END_ADDR || (char*)newBlock + newBlock->size + sizeof(BlockHeader) > (char*)HEAP_END_ADDR)
+        if((uint8*)newBlock >= (uint8*)HEAP_END_ADDR || (uint8*)newBlock + newBlock->size + sizeof(BlockHeader) > (uint8*)HEAP_END_ADDR)
             MemoryAllocator::fmem_head = nullptr;
 
     }
@@ -68,7 +68,7 @@ void* MemoryAllocator::kmem_alloc(size_t size){
     curr->next = nullptr;
     curr->prev = nullptr;
 
-    return (char*)curr + sizeof(BlockHeader);
+    return (uint8*)curr + sizeof(BlockHeader);
 
 }
 
@@ -78,15 +78,15 @@ int MemoryAllocator::kmem_free(void* addr){
 
     BlockHeader* curr = nullptr;
 
-    if(!MemoryAllocator::fmem_head || (char*)addr < (char*)MemoryAllocator::fmem_head)
+    if(!MemoryAllocator::fmem_head || (uint8*)addr < (uint8*)MemoryAllocator::fmem_head)
         curr = nullptr;
     else{
         curr = MemoryAllocator::fmem_head;
-        while(curr->next &&  (char*)addr > (char*)curr->next)
+        while(curr->next &&  (uint8*)addr > (uint8*)curr->next)
             curr = curr->next;
     }
 
-    BlockHeader* newBlock = (BlockHeader*)((char*)addr - sizeof(BlockHeader));
+    BlockHeader* newBlock = (BlockHeader*)((uint8*)addr - sizeof(BlockHeader));
     newBlock->prev = curr;
     if(curr) newBlock->next = curr->next;
     else newBlock->next = MemoryAllocator::fmem_head;
