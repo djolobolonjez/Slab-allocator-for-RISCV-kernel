@@ -60,8 +60,26 @@ void Slab::putObject(void *objp) {
             slabHeader->owner->moveSlab(slabHeader, Cache::FREE);
     }
 
+    if (slabHeader->owner->dtor)
+        slabHeader->owner->dtor(objp);
+
+    if (slabHeader->owner->ctor)
+        slabHeader->owner->ctor(objp);
+
     slabHeader->numOfFreeSlots++;
     unsigned index = ((uint8*)slabObject - (uint8*)slabHeader->mem) / (slabHeader->owner->slotSize);
     slabHeader->freeArray[index] = slabHeader->free;
     slabHeader->free = index;
+}
+
+void Slab::destroySlab(Slab *slab) {
+    Cache* handle = slab->owner;
+
+    if (handle->dtor)
+        for (unsigned i = 0; i < handle->objNum; i++) {
+            void* addr = (void*) ((uint8*)slab->mem + i * handle->slotSize);
+            handle->dtor(addr);
+        }
+
+    Buddy::free(slab, handle->slabOrder);
 }

@@ -23,6 +23,7 @@ private:
     friend class Cache;
 public:
     static void createSlab(size_t size, Cache* handle);
+    static void destroySlab(Slab* slab);
     // TODO - implementirati destroySlab zbog cacheDestroy poziva
     static void* takeObject(Slab* slab);
     static void putObject(void* objp);

@@ -31,6 +31,10 @@ Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(v
     this->slabsFree = nullptr;
 }
 
+Cache::~Cache() {
+    destroyCache(this);
+}
+
 void* Cache::operator new(size_t size) {
     return CachePool::allocateSlot();
 }
@@ -116,11 +120,10 @@ void* Cache::cacheAlloc() {
             moveFree(this->slabsFree, Cache::PARTIAL);
     }
 
-    if (this->numOfSlabs > oldNumOfSlabs)
-        setShrink(0); // istraziti shrinkovanje, da li se prvi prvoj alokaciji setuje ili ne??? mozda alocirati odma jedan slab i izbeci ovo? reset je prilikom shrinka
-
+    if (this->numOfSlabs > oldNumOfSlabs && this->numOfSlabs > 1)
+        setShrink(0);
     void* objp = Slab::takeObject(this->slabsPartial);
-    if (this->slabsPartial->numOfFreeSlots == 0) // proveriti slucaj kada ima vise partial slabova!!! tj. da li postoji taj slucaj??
+    if (this->slabsPartial->numOfFreeSlots == 0)
         moveSlab(this->slabsPartial, Cache::FULL);
 
     return objp;
@@ -130,4 +133,44 @@ void Cache::cacheFree(void* objp) {
     Slab::putObject(objp);
     if (this->ctor)
         this->ctor(objp);
+}
+
+int Cache::cacheShrink() {
+    int count = 0;
+    if (shrink == 0)
+        setShrink(1);
+    else {
+        Slab* curr = this->slabsFree;
+        while (curr) {
+            this->numOfSlabs--;
+            Slab* old = curr;
+            int numOfBlocks = old->owner->slabSize / BLOCK_SIZE;
+            curr = curr->next;
+            Slab::destroySlab(old);
+            count += numOfBlocks;
+        }
+    }
+
+    return count;
+}
+
+void Cache::destroyCache(Cache *cachep) {
+
+    Slab* curr = cachep->slabsFree;
+    deallocSlabGroup(curr);
+
+    curr = cachep->slabsPartial;
+    deallocSlabGroup(curr);
+
+    curr = cachep->slabsFull;
+    deallocSlabGroup(curr);
+}
+
+void Cache::deallocSlabGroup(Slab *slab) {
+    Slab* curr = slab;
+    while (curr) {
+        Slab* old = curr;
+        curr = curr->next;
+        Slab::destroySlab(old);
+    }
 }

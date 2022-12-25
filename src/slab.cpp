@@ -18,6 +18,12 @@ kmem_cache_create(const char* name, size_t size, void (*ctor)(void*), void (*dto
     return new Cache(name, size, ctor, dtor);
 }
 
+int
+kmem_cache_shrink(kmem_cache_t* cachep)
+{
+    return cachep->cacheShrink();
+}
+
 void*
 kmem_cache_alloc(kmem_cache_t* cachep)
 {

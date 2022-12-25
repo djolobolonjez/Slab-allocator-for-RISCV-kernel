@@ -31,22 +31,28 @@ private:
 
     static size_t estimateOrder(size_t slotSize);
     static size_t getNumberOfObjects(size_t slabSize, size_t slotSize);
+    static void deallocSlabGroup(Slab* slab);
 
     friend class CachePool;
     friend class Slab;
 public:
     Cache(const char* name, size_t size, void (*ctor)(void*), void (*dtor)(void*));
+    ~Cache();
 
     void setShrink(int _shrink) { this->shrink = _shrink; }
 
     void* cacheAlloc();
     void cacheFree(void* objp);
+    int cacheShrink();
+
+    static void destroyCache(Cache* cachep);
 
     void moveFree(Slab* slab, SlabGroup grp);
     void moveSlab(Slab* slab, SlabGroup grp);
 
     void* operator new(size_t size);
     void operator delete(void* addr);
+
 };
 
 
