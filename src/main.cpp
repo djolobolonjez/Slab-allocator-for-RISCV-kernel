@@ -11,32 +11,12 @@
 void userMain();
 
 void main(){
+    Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 
     int blockNum = Buddy::getBlockNum();
     void* space = (void*) (HEAP_START_ADDR);
 
     kmem_init(space, blockNum);
-
-    kmem_cache_t* handle = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
-
-    TCB* thread_one = (TCB*) kmem_cache_alloc(handle);
-    TCB* thread_two = (TCB*) kmem_cache_alloc(handle);
-    kmem_cache_free(handle, thread_one);
-    kmem_cache_free(handle, thread_two);
-
-    kmem_cache_destroy(handle);
-
-    /*char* blk = (char*) Buddy::alloc(0);
-    char* blk2 = (char*) Buddy::alloc(0);
-    char* blk3 = (char*) Buddy::alloc(1);
-    char* blk4 = (char*) Buddy::alloc(1);
-
-    Buddy::free(blk, 0);
-    Buddy::free(blk2, 0);
-    Buddy::free(blk3, 1);
-    Buddy::free(blk4, 1);*/
-
-    Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 
     KernelConsole* instance = KernelConsole::getInstance();
     TCB* usermainThread = nullptr, * putcThread = nullptr, *mainThread = nullptr;
@@ -49,6 +29,20 @@ void main(){
 
     putcThread->setPrivilege(1);
     mainThread->setPrivilege(1);
+
+    kmem_cache_t* handle = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
+
+    TCB* thread_one = (TCB*) kmem_cache_alloc(handle);
+    for (int i = 0; i < 120; i++)
+        kmem_cache_alloc(handle);
+    TCB* thread_two = (TCB*) kmem_cache_alloc(handle);
+
+    kmem_cache_info(handle);
+
+    kmem_cache_free(handle, thread_one);
+    kmem_cache_free(handle, thread_two);
+
+    kmem_cache_destroy(handle);
 
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;

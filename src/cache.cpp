@@ -1,6 +1,7 @@
 #include "../h/cache.h"
 #include "../h/system.h"
 #include "../h/SlabAllocator.h"
+#include "../h/printing.hpp"
 
 Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(void *)) {
     if (!CachePool::cacheTail) {
@@ -172,5 +173,59 @@ void Cache::deallocSlabGroup(Slab *slab) {
         Slab* old = curr;
         curr = curr->next;
         Slab::destroySlab(old);
+    }
+}
+
+void Cache::printInfo() {
+    printString("Cache name: ");
+    printString(this->name);
+    printString("\n");
+
+    printString("Object size: ");
+    printInt(this->slotSize);
+    printString("B\n");
+
+    printString("Cache size: ");
+    int cacheSize = (int)(this->numOfSlabs * this->slabSize) / BLOCK_SIZE;
+    printInt(cacheSize);
+
+    if (cacheSize == 1)
+        printString(" block\n");
+    else
+        printString(" blocks\n");
+
+    printString("Number of slabs in cache: ");
+    printInt(this->numOfSlabs);
+    printString("\n");
+
+    printString("Number of objects in one slab: ");
+    printInt(this->objNum);
+    printString("\n");
+
+    int freeCount = 0;
+    int allocatedCount = 0;
+
+    Slab* curr = this->slabsFree;
+    objectCount(curr, freeCount, allocatedCount);
+
+    curr = this->slabsPartial;
+    objectCount(curr, freeCount, allocatedCount);
+
+    curr = this->slabsFull;
+    objectCount(curr, freeCount, allocatedCount);
+
+    int percentage = (1000 * allocatedCount) / freeCount;
+    percentage /= 10;
+    printInt(percentage);
+
+    printString("% of cache is used.\n");
+}
+
+void Cache::objectCount(Slab* slab, int &free, int &allocated) {
+    Slab* curr = slab;
+    while (curr) {
+        free += curr->numOfSlots;
+        allocated += (curr->numOfSlots - curr->numOfFreeSlots);
+        curr = curr->next;
     }
 }
