@@ -43,3 +43,10 @@ kmem_cache_destroy(kmem_cache_t* cachep)
     delete cachep;
 }
 
+void
+kmem_cache_info(kmem_cache_t* cachep)
+{
+    cachep->printInfo();
+}
+
+

@@ -32,6 +32,7 @@ private:
     static size_t estimateOrder(size_t slotSize);
     static size_t getNumberOfObjects(size_t slabSize, size_t slotSize);
     static void deallocSlabGroup(Slab* slab);
+    static void objectCount(Slab* slab, int& free, int& allocated);
 
     friend class CachePool;
     friend class Slab;
@@ -44,6 +45,7 @@ public:
     void* cacheAlloc();
     void cacheFree(void* objp);
     int cacheShrink();
+    void printInfo();
 
     static void destroyCache(Cache* cachep);
 
