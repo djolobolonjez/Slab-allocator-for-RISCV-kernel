@@ -1,7 +1,6 @@
 #include "../h/buddy.h"
 #include "../h/SlabAllocator.h"
 
-
 void Slab::createSlab(size_t size, Cache* handle) {
     Slab* newSlab = (Slab*) Buddy::alloc(size);
 
@@ -73,11 +72,11 @@ void Slab::putObject(void *objp) {
 }
 
 void Slab::destroySlab(Slab *slab) {
-    Cache* handle = slab->owner;
+    Cache *handle = slab->owner;
 
     if (handle->dtor)
         for (unsigned i = 0; i < handle->objNum; i++) {
-            void* addr = (void*) ((uint8*)slab->mem + i * handle->slotSize);
+            void *addr = (void *) ((uint8 *) slab->mem + i * handle->slotSize);
             handle->dtor(addr);
         }
 

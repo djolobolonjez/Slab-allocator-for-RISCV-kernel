@@ -22,8 +22,17 @@
 #define GETC 0x41
 #define PUTC 0x42
 
-#define MAX_BUFF_SIZE 1024
+#define MAX_SIZE 1024
 #define BLOCK_SIZE (4096)
+#define MAX_BUCKET 12
+
+#define MIN_BUFF_ORDER 5
+#define MAX_BUFF_ORDER 17
+
+#define MIN_BUFF_SIZE 1 << MIN_BUFF_ORDER
+#define MAX_BUFF_SIZE 1 << MAX_BUFF_ORDER
+
+#define BUFFER_NUM (MAX_BUFF_ORDER - MIN_BUFF_ORDER + 1)
 
 #define ECALL asm volatile("ecall");
 

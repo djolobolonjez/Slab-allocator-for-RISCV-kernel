@@ -1,7 +1,9 @@
 #include "../h/CachePool.h"
 #include "../h/buddy.h"
-#include "../h/system.h"
 #include "../h/cache.h"
+#include "../h/SlabAllocator.h"
+
+Cache* CachePool::memoryBuffers[BUFFER_NUM] = {nullptr};
 
 CachePool::CacheRecord* CachePool::head = nullptr;
 CachePool::CacheRecord* CachePool::tail = nullptr;
@@ -68,8 +70,6 @@ Cache* CachePool::allocateSlot() {
 
 void CachePool::deallocateSlot(Cache *handle) {
 
-    // TODO - Free all slabs before deallocating cache itself
-
     if (handle->prev == nullptr) {
         cacheHead = cacheHead->next;
         if (!cacheHead) cacheTail = nullptr;
@@ -111,4 +111,34 @@ void CachePool::destroyRecord(CacheRecord* record) {
     curr->next = nullptr;
 
     Buddy::free(curr, 0);
+}
+
+void CachePool::SlabInit() {
+
+    for (unsigned i = 0; i < BUFFER_NUM; i++) {
+        memoryBuffers[i] = new Cache("size-", 1 << (MIN_BUFF_ORDER + i), nullptr, nullptr);
+        memoryBuffers[i]->setGroup(Cache::SMALL_MEMORY_BUFFER);
+    }
+}
+
+int CachePool::getPowerOfTwo(size_t x) {
+    size_t value = 1;
+    int order = 0;
+    while (x > value) {
+        value <<= 1;
+        order++;
+    }
+    return order - MIN_BUFF_ORDER;
+}
+
+void* CachePool::allocateBuffer(size_t size) {
+    if (size < MIN_BUFF_SIZE || size > MAX_BUFF_SIZE)
+        return nullptr; // Exception
+
+    int index = getPowerOfTwo(size);
+    return memoryBuffers[index]->cacheAlloc();
+}
+
+void CachePool::deallocateBuffer(const void *objp) {
+    Slab::putObject(const_cast<void*>(objp));
 }

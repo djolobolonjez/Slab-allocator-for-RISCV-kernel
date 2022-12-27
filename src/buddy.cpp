@@ -49,7 +49,7 @@ int Buddy::buddyInit(void* space, int blockNum) {
         blocks[i] = nullptr;
 
     pageAlign();
-    HEAP_START_ADDR = (uint8*)KERNEL_END_ADDR + 1;
+    HEAP_START_ADDR = (uint8*)KERNEL_END_ADDR;
 
     blocks[MAX_ORDER] = (FreeArea*) KERNEL_START_ADDR;
     blocks[MAX_ORDER]->next = nullptr;

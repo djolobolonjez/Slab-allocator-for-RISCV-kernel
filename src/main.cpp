@@ -33,7 +33,7 @@ void main(){
     kmem_cache_t* handle = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
 
     TCB* thread_one = (TCB*) kmem_cache_alloc(handle);
-    for (int i = 0; i < 120; i++)
+    for (int i = 0; i < 100; i++)
         kmem_cache_alloc(handle);
     TCB* thread_two = (TCB*) kmem_cache_alloc(handle);
 
@@ -43,6 +43,11 @@ void main(){
     kmem_cache_free(handle, thread_two);
 
     kmem_cache_destroy(handle);
+
+    char* buff = (char*) kmalloc(MIN_BUFF_SIZE);
+    kfree(buff);
+
+    // TODO - Odraditi dealokaciju svih rucki kesa i vratiti sve Badiju
 
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;

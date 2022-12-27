@@ -1,6 +1,7 @@
 #include "../h/slab.h"
 #include "../h/buddy.h"
 #include "../h/cache.h"
+#include "../h/SlabAllocator.h"
 
 void
 kmem_init(void* space, int block_num)
@@ -9,7 +10,7 @@ kmem_init(void* space, int block_num)
         return; // Exception
 
     CachePool::CachePoolInit();
-    // TODO - inicijalizovati Slab (m.m. bafere itd.)
+    CachePool::SlabInit();
 }
 
 kmem_cache_t*
@@ -36,6 +37,17 @@ kmem_cache_free(kmem_cache_t* cachep, void* objp)
     cachep->cacheFree(objp);
 }
 
+void*
+kmalloc(size_t size)
+{
+    return CachePool::allocateBuffer(size);
+}
+
+void
+kfree(const void* objp)
+{
+    CachePool::deallocateBuffer(objp);
+}
 
 void
 kmem_cache_destroy(kmem_cache_t* cachep)

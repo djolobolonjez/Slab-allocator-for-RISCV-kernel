@@ -3,6 +3,7 @@
 
 #include "../lib/hw.h"
 #include "../h/cache.h"
+#include "../h/system.h"
 
 class Slab {
 private:
@@ -24,9 +25,10 @@ private:
 public:
     static void createSlab(size_t size, Cache* handle);
     static void destroySlab(Slab* slab);
-    // TODO - implementirati destroySlab zbog cacheDestroy poziva
     static void* takeObject(Slab* slab);
     static void putObject(void* objp);
+
+
 
 };
 

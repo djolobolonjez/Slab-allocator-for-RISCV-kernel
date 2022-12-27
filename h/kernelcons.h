@@ -10,8 +10,8 @@ private:
 
     static KernelConsole* instance;
 
-    char input_buff[MAX_BUFF_SIZE];
-    char output_buff[MAX_BUFF_SIZE];
+    char input_buff[MAX_SIZE];
+    char output_buff[MAX_SIZE];
 
     KernelSem* fullBuff1, *emptyBuff1;
     KernelSem* fullBuff2, *emptyBuff2;

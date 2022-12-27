@@ -7,17 +7,25 @@
 class Slab;
 
 class Cache {
-public:
+
+private:
     enum SlabGroup {
         FULL,
         PARTIAL,
         FREE
     };
-private:
+
+    enum ObjectGroup {
+        SMALL_MEMORY_BUFFER,
+        KERNEL_OBJECT
+    };
+
     const char* name;
     size_t slotSize;
     void (*ctor)(void*);
     void (*dtor)(void*);
+
+    ObjectGroup group;
 
     Cache* next, *prev;
     Slab* slabsFull, *slabsPartial, *slabsFree;
@@ -40,7 +48,10 @@ public:
     Cache(const char* name, size_t size, void (*ctor)(void*), void (*dtor)(void*));
     ~Cache();
 
+    void setGroup(ObjectGroup _group) { this->group = _group; }
     void setShrink(int _shrink) { this->shrink = _shrink; }
+
+    ObjectGroup getGroup() { return this->group; }
 
     void* cacheAlloc();
     void cacheFree(void* objp);

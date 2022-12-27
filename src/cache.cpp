@@ -21,6 +21,8 @@ Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(v
     this->dtor = dtor;
     this->shrink = 1;
 
+    this->group = ObjectGroup::KERNEL_OBJECT;
+
     this->slabOrder = estimateOrder(this->slotSize);
     this->slabSize = (1 << this->slabOrder) * BLOCK_SIZE;
     this->objNum = getNumberOfObjects(this->slabSize, this->slotSize);
@@ -45,9 +47,16 @@ void Cache::operator delete(void *addr)  {
 }
 
 size_t Cache::estimateOrder(size_t slotSize) {
-    size_t slabOrder = (slotSize > BLOCK_SIZE ? slotSize / BLOCK_SIZE : 0);
+    size_t minOrder = 0;
+    size_t slabSize = (1 << minOrder) * BLOCK_SIZE;
+    size_t minSize = slabSize - sizeof(Slab) - sizeof(unsigned);
 
-    return slabOrder;
+    while (minSize < slotSize && minOrder < MAX_BUCKET) {
+        minOrder++;
+        minSize = (1 << minOrder) * BLOCK_SIZE - sizeof(Slab) - sizeof(unsigned);
+    }
+
+    return minOrder;
 }
 
 size_t Cache::getNumberOfObjects(size_t slabSize, size_t slotSize) {
@@ -132,8 +141,6 @@ void* Cache::cacheAlloc() {
 
 void Cache::cacheFree(void* objp) {
     Slab::putObject(objp);
-    if (this->ctor)
-        this->ctor(objp);
 }
 
 int Cache::cacheShrink() {
@@ -179,6 +186,10 @@ void Cache::deallocSlabGroup(Slab *slab) {
 void Cache::printInfo() {
     printString("Cache name: ");
     printString(this->name);
+
+    if (this->getGroup() == SMALL_MEMORY_BUFFER)
+        printInt(this->slotSize);
+
     printString("\n");
 
     printString("Object size: ");
@@ -216,7 +227,11 @@ void Cache::printInfo() {
 
     int percentage = (1000 * allocatedCount) / freeCount;
     percentage /= 10;
-    printInt(percentage);
+
+    if (freeCount == 0)
+        printInt(0);
+    else
+        printInt(percentage);
 
     printString("% of cache is used.\n");
 }
