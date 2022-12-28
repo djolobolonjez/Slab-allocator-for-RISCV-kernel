@@ -68,7 +68,7 @@ public:
     static void supervisorTrap();
 
 private:
-    static void trapHandler(/*uint64 a0, uint64 a1, uint64 a2, uint64 a3, uint64 a4*/);
+    static void trapHandler();
 
 };
 

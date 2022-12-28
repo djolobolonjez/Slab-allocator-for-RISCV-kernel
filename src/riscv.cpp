@@ -4,6 +4,7 @@
 #include "../h/kernelsem.h"
 #include "../h/sleeping.h"
 #include "../h/kernelcons.h"
+#include "../h/slab.h"
 
 char dig[] = "0123456789ABCDEF";
 
@@ -140,6 +141,7 @@ void Riscv::trapHandler()  {
             W_RET
         }
         else if(number == THREAD_CREATE){
+
             thread_t* handle;
             void (*start_routine)(void*);
             void* arg;

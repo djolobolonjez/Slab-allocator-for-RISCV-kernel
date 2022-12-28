@@ -21,6 +21,8 @@ void main(){
     KernelConsole* instance = KernelConsole::getInstance();
     TCB* usermainThread = nullptr, * putcThread = nullptr, *mainThread = nullptr;
 
+    TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, nullptr);
+
     thread_create(&putcThread, KernelConsole::consoleput, nullptr);
     thread_create(&mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, &Scheduler::idle, nullptr);
@@ -67,11 +69,11 @@ void main(){
 
     putcThread->setFinished(true);
     Scheduler::idleThread->setFinished(true);
-    delete putcThread;
+    /*delete putcThread;
     delete Scheduler::idleThread;
     delete usermainThread;
-    delete instance;
+    delete instance;*/
     mainThread->setFinished(true);
-    delete mainThread;
+    //delete mainThread;
 
 }

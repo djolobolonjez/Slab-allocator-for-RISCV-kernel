@@ -1,6 +1,7 @@
 #include "../h/kernelcons.h"
 #include "../h/riscv.h"
 #include "../h/MemoryAllocator.h"
+#include "../h/slab.h"
 
 KernelConsole* KernelConsole::instance = nullptr;
 
@@ -10,6 +11,9 @@ KernelConsole::KernelConsole() {
     sem_open(&fullBuff1, MAX_SIZE);
     sem_open(&emptyBuff2, 0);
     sem_open(&fullBuff2, MAX_SIZE);
+
+    output_buff = (char*) kmalloc(MAX_SIZE);
+    input_buff = (char*) kmalloc(MAX_SIZE);
 }
 
 KernelConsole::~KernelConsole() {

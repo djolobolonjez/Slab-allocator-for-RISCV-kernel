@@ -4,15 +4,17 @@
 
 #include "../h/MemoryAllocator.h"
 #include "../h/system.h"
+#include "../h/KernelObject.h"
 
 class Scheduler;
 class KernelSem;
+class Cache;
 
-
-class TCB{
+class TCB : public KernelObject<TCB> {
 
 public:
 
+    TCB();
     ~TCB();
 
     struct Context{
@@ -53,6 +55,7 @@ public:
     void setPid(int id) { pid = id; }
 
     static TCB* running;
+    static Cache* cacheTCB;
 
     static int call;
 
