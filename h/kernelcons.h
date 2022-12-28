@@ -32,9 +32,11 @@ public:
     void put(char);  // put the character into output buffer
     char get();  // take the character from the input buffer
 
+    void flush() const;
+
     static void consoleput(void* arg);   // kernel function for sending the character to the console
 
-    static KernelConsole* getInstance();  // get the single instance
+    static KernelConsole* getInstance();// get the single instance
 
     friend class Riscv;
 

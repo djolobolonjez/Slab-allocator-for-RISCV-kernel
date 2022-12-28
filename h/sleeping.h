@@ -4,12 +4,13 @@
 #include "../lib/hw.h"
 
 class TCB;
+class Cache;
 
-class Sleeping{
+class Sleeping {
 private:
     Sleeping() = default;
 
-    struct SleepQueue{
+    struct SleepQueue {
 
         TCB* tcb;
         SleepQueue* prev;
@@ -18,6 +19,8 @@ private:
     };
 
     static SleepQueue* head;
+
+    static Cache* cacheSleep;
 
     static SleepQueue* getNode();  // creates a node for sleeping queue
     static void deleteNode(SleepQueue*);  // delete the node when the thread wakes up

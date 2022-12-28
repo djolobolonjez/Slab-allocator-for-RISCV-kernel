@@ -1,18 +1,21 @@
 #include "../h/sleeping.h"
 #include "../h/scheduler.h"
 #include "../h/tcb.h"
+#include "../h/slab.h"
 
 Sleeping::SleepQueue* Sleeping::head = nullptr;
+Cache* Sleeping::cacheSleep = nullptr;
 
 Sleeping::SleepQueue* Sleeping::getNode() {
+    if (!cacheSleep) cacheSleep = kmem_cache_create("Sleeping Queue Cache", sizeof(SleepQueue), nullptr, nullptr);
 
-    SleepQueue* node = (SleepQueue*) MemoryAllocator::kmem_alloc(sizeof(SleepQueue));
+    SleepQueue* node = (SleepQueue*) kmem_cache_alloc(cacheSleep);
     node->next = node->prev = nullptr;
     return node;
 }
 
 void Sleeping::deleteNode(SleepQueue* node) {
-    MemoryAllocator::kmem_free(node);
+    kmem_cache_free(cacheSleep, node);
 }
 
 void Sleeping::remove(){

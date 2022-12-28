@@ -9,6 +9,14 @@
 #include "../h/SlabAllocator.h"
 #include "../h/kernelsem.h"
 
+class UserThread : public Thread {
+public:
+    void run() override {
+        putc('1');
+    }
+
+};
+
 void userMain();
 
 void main(){
@@ -22,9 +30,9 @@ void main(){
     TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, nullptr);
     KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
 
-
-    KernelConsole* instance = KernelConsole::getInstance();
+    KernelConsole* console = KernelConsole::getInstance();
     TCB* usermainThread = nullptr, * putcThread = nullptr, *mainThread = nullptr;
+
 
     thread_create(&putcThread, KernelConsole::consoleput, nullptr);
     thread_create(&mainThread, nullptr, nullptr);
@@ -66,16 +74,21 @@ void main(){
 
     Riscv::ms_sstatus(SSTATUS_SIE);
 
-    while(instance->inputHead() != instance->inputTail()) { }
+    console->flush();
 
     Riscv::mc_sstatus(SSTATUS_SIE);
 
     putcThread->setFinished(true);
     Scheduler::idleThread->setFinished(true);
+
     /*delete putcThread;
     delete Scheduler::idleThread;
-    delete usermainThread;
-    delete instance;*/
+    delete usermainThread;*/
+    delete console;
+
+    kmem_cache_destroy(TCB::cacheTCB);
+    kmem_cache_destroy(KernelSem::cacheSem);
+
     mainThread->setFinished(true);
     //delete mainThread;
 

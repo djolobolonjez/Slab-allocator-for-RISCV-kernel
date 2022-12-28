@@ -25,12 +25,12 @@ TCB::~TCB() {
 
 }
 
-void* TCB::operator new(size_t size) { return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0 ? 1:0));}
-void* TCB::operator new[](size_t size) { return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0 ? 1:0));}
+void* TCB::operator new(size_t size) { return kmem_cache_alloc(cacheTCB); }
+void* TCB::operator new[](size_t size) { return kmem_cache_alloc(cacheTCB); }
 
-void TCB::operator delete(void *addr) { MemoryAllocator::kmem_free(addr); }
+void TCB::operator delete(void *addr) { kmem_cache_free(cacheTCB, addr); }
 
-void TCB::operator delete[](void *addr)  { MemoryAllocator::kmem_free(addr); }
+void TCB::operator delete[](void *addr)  { kmem_cache_free(cacheTCB, addr); }
 
 
 void TCB::yield() {
@@ -63,7 +63,7 @@ TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *ar
         return *handle;
     }
 
-    TCB* thread = (TCB*) kmem_cache_alloc(TCB::cacheTCB);
+    TCB* thread = (TCB*) kmem_cache_alloc(cacheTCB);
     thread->stack = (start_routine != nullptr ? (uint64*)stack_space : nullptr);
     thread->fun = start_routine;
     thread->funArg = arg;

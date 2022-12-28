@@ -142,3 +142,11 @@ void* CachePool::allocateBuffer(size_t size) {
 void CachePool::deallocateBuffer(const void *objp) {
     Slab::putObject(const_cast<void*>(objp));
 }
+
+size_t CachePool::powerOfTwoSize(size_t x) {
+    size_t value = 1;
+    while (x > value)
+        value <<= 1;
+
+    return value;
+}

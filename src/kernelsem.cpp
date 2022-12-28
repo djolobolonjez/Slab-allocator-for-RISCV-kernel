@@ -6,6 +6,7 @@
 #include "../h/slab.h"
 
 Cache* KernelSem::cacheSem = nullptr;
+Cache* KernelSem::cacheBlocked = nullptr;
 
 KernelSem::KernelSem() {
     this->head = nullptr;
@@ -13,13 +14,8 @@ KernelSem::KernelSem() {
     this->val = 0;
 }
 
-KernelSem::KernelSem(sem_t* handle, unsigned int init_value) : val((int)init_value) {
-    head = tail = nullptr;
-    *handle = this;
-}
-
 KernelSem::~KernelSem() {
-    Queue* curr = KernelSem::head, *prev = nullptr;
+    BlockedQueue* curr = KernelSem::head, *prev = nullptr;
     while(curr){
         prev = curr;
         curr = curr->next;
@@ -36,7 +32,7 @@ KernelSem::~KernelSem() {
 
 KernelSem* KernelSem::createSem(sem_t* pSem, unsigned int init_value) {
 
-    KernelSem* semaphore = (KernelSem*) kmem_cache_alloc(KernelSem::cacheSem);
+    KernelSem* semaphore = (KernelSem*) kmem_cache_alloc(cacheSem);
     semaphore->head = semaphore->tail = nullptr;
     semaphore->val = (int)init_value;
 
@@ -51,12 +47,13 @@ int KernelSem::deleteSem(KernelSem* sem) {
     return 0;
 }
 
-KernelSem::Queue* KernelSem::createNode() {
-    return (Queue*) MemoryAllocator::kmem_alloc(sizeof(Queue));
+KernelSem::BlockedQueue* KernelSem::createNode() {
+    if (!cacheBlocked) cacheBlocked = kmem_cache_create("Blocked Queue Cache", sizeof(BlockedQueue), nullptr, nullptr);
+    return (BlockedQueue*) kmem_cache_alloc(cacheBlocked);
 }
 
-void KernelSem::deleteNode(Queue* node) {
-    MemoryAllocator::kmem_free(node);
+void KernelSem::deleteNode(BlockedQueue* node) {
+    kmem_cache_free(cacheBlocked, node);
 }
 
 int KernelSem::wait() {
@@ -92,7 +89,7 @@ void KernelSem::deblock() {
 
 void KernelSem::insert(TCB* tcb) {
 
-    Queue* node = createNode();
+    BlockedQueue* node = createNode();
     node->next = nullptr;
     node->tcb = tcb;
     if(tail){
@@ -111,7 +108,7 @@ TCB* KernelSem::remove() {
     data->setHolder(nullptr);
     data->setBlocked(false);
 
-    Queue* old = head;
+    BlockedQueue* old = head;
     head = head->next;
     if(!head) tail = nullptr;
 
@@ -120,8 +117,8 @@ TCB* KernelSem::remove() {
     return data;
 }
 
-void* KernelSem::operator new(size_t size) { return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0?1:0));}
-void* KernelSem::operator new[](size_t size) { return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0?1:0));}
+void* KernelSem::operator new(size_t size) { return kmem_cache_alloc(cacheSem); }
+void* KernelSem::operator new[](size_t size) { return kmem_cache_alloc(cacheSem); }
 
-void KernelSem::operator delete(void *addr) { /*MemoryAllocator::kmem_free(addr);*/kmem_cache_free(KernelSem::cacheSem, addr); }
-void KernelSem::operator delete[](void *addr)  { MemoryAllocator::kmem_free(addr); }
+void KernelSem::operator delete(void *addr) { kmem_cache_free(cacheSem, addr); }
+void KernelSem::operator delete[](void *addr)  { kmem_cache_free(cacheSem, addr); }

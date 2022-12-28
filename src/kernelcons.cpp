@@ -2,6 +2,7 @@
 #include "../h/riscv.h"
 #include "../h/MemoryAllocator.h"
 #include "../h/slab.h"
+#include "../h/CachePool.h"
 
 KernelConsole* KernelConsole::instance = nullptr;
 
@@ -74,9 +75,14 @@ void KernelConsole::consoleput(void* arg) {
 
 
 void KernelConsole::operator delete(void* addr) {
-    MemoryAllocator::kmem_free(addr);
+    kfree(addr);
 }
 
 void* KernelConsole::operator new(size_t size) {
-    return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0 ? 1:0));
+    return kmalloc(CachePool::powerOfTwoSize(size));
+}
+
+void KernelConsole::flush() const {
+
+    while(inputHead() != inputTail()) { }
 }

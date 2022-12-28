@@ -32,15 +32,15 @@ public:
 
 private:
 
-    KernelSem(sem_t* pSem, unsigned init_value);
-
-    struct Queue{
+    struct BlockedQueue {
         TCB* tcb;
-        Queue* next;
+        BlockedQueue* next;
     };
 
-    static Queue* createNode();  // creates a node for the blocked queue implemented as a linked list
-    static void deleteNode(Queue*);  // delete the node when the thread is unblocked
+    static Cache* cacheBlocked;
+
+    static BlockedQueue* createNode();  // creates a node for the blocked queue implemented as a linked list
+    static void deleteNode(BlockedQueue*);  // delete the node when the thread is unblocked
 
     void block();  // place the thread in blocked queue
     void deblock();  // remove thread from blocked queue and place it back to scheduler
@@ -50,7 +50,7 @@ private:
 
     int val;
 
-    Queue* head, *tail;
+    BlockedQueue* head, *tail;
 
 };
 

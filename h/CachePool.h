@@ -36,6 +36,8 @@ public:
 
     static void* allocateBuffer(size_t size);
     static void deallocateBuffer(const void* objp);
+
+    static size_t powerOfTwoSize(size_t x);
 };
 
 #endif // CACHE_POOL_H
