@@ -23,9 +23,8 @@ Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(v
 
     this->group = ObjectGroup::KERNEL_OBJECT;
 
-    this->slabOrder = estimateOrder(this->slotSize);
+    this->slabOrder = getOrder(this->slotSize, this->objNum);
     this->slabSize = (1 << this->slabOrder) * BLOCK_SIZE;
-    this->objNum = getNumberOfObjects(this->slabSize, this->slotSize);
 
     this->numOfSlabs = 0;
 
@@ -46,25 +45,22 @@ void Cache::operator delete(void *addr)  {
     CachePool::deallocateSlot((Cache*)addr);
 }
 
-size_t Cache::estimateOrder(size_t slotSize) {
+size_t Cache::getOrder(size_t slotSize, size_t& numSlots) {
     size_t minOrder = 0;
     size_t slabSize = (1 << minOrder) * BLOCK_SIZE;
-    size_t minSize = slabSize - sizeof(Slab) - sizeof(unsigned);
+    numSlots = 0;
 
-    while (minSize < slotSize && minOrder < MAX_BUCKET) {
-        minOrder++;
-        minSize = (1 << minOrder) * BLOCK_SIZE - sizeof(Slab) - sizeof(unsigned);
+    while (numSlots == 0) {
+        while (numSlots * slotSize + numSlots * sizeof(unsigned) + sizeof(Slab) <= slabSize)
+            numSlots++;
+
+        if (--numSlots == 0){
+            minOrder++;
+            slabSize <<= 1;
+        }
     }
 
     return minOrder;
-}
-
-size_t Cache::getNumberOfObjects(size_t slabSize, size_t slotSize) {
-    int numObj = 0;
-    while (numObj * slotSize + numObj * sizeof(unsigned) + sizeof (Slab) <= slabSize)
-        numObj++;
-
-    return numObj - 1;
 }
 
 void Cache::moveFree(Slab* slab, SlabGroup grp) {

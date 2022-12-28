@@ -258,10 +258,10 @@ void Riscv::trapHandler()  {
             if(READ_READY){
                 char c = C_READ;
                 KernelConsole* cons  = KernelConsole::getInstance();
-                if(cons->size < MAX_BUFF_SIZE){
+                if(cons->size < MAX_SIZE){
                     cons->size++;
                     cons->input_buff[cons->tail2] = c;
-                    cons->tail2 = (cons->tail2 + 1) % MAX_BUFF_SIZE;
+                    cons->tail2 = (cons->tail2 + 1) % MAX_SIZE;
                     cons->emptyBuff2->signal();
                 }
             }

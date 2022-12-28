@@ -3,6 +3,15 @@
 #include "../h/system.h"
 #include "../h/kernelsem.h"
 #include "../h/tcb.h"
+#include "../h/slab.h"
+
+Cache* KernelSem::cacheSem = nullptr;
+
+KernelSem::KernelSem() {
+    this->head = nullptr;
+    this->tail = nullptr;
+    this->val = 0;
+}
 
 KernelSem::KernelSem(sem_t* handle, unsigned int init_value) : val((int)init_value) {
     head = tail = nullptr;
@@ -27,7 +36,13 @@ KernelSem::~KernelSem() {
 
 KernelSem* KernelSem::createSem(sem_t* pSem, unsigned int init_value) {
 
-    return new KernelSem(pSem, init_value);
+    KernelSem* semaphore = (KernelSem*) kmem_cache_alloc(KernelSem::cacheSem);
+    semaphore->head = semaphore->tail = nullptr;
+    semaphore->val = (int)init_value;
+
+    *pSem = semaphore;
+
+    return semaphore;
 }
 
 int KernelSem::deleteSem(KernelSem* sem) {
@@ -108,5 +123,5 @@ TCB* KernelSem::remove() {
 void* KernelSem::operator new(size_t size) { return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0?1:0));}
 void* KernelSem::operator new[](size_t size) { return MemoryAllocator::kmem_alloc(size/MEM_BLOCK_SIZE + (size%MEM_BLOCK_SIZE != 0?1:0));}
 
-void KernelSem::operator delete(void *addr) { MemoryAllocator::kmem_free(addr); }
+void KernelSem::operator delete(void *addr) { /*MemoryAllocator::kmem_free(addr);*/kmem_cache_free(KernelSem::cacheSem, addr); }
 void KernelSem::operator delete[](void *addr)  { MemoryAllocator::kmem_free(addr); }

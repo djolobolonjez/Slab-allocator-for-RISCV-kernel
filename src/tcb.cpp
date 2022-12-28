@@ -4,7 +4,6 @@
 #include "../h/syscall_c.h"
 #include "../h/slab.h"
 
-class Thread;
 
 Cache* TCB::cacheTCB = nullptr;
 TCB* TCB::running;
@@ -14,13 +13,13 @@ uint64 TCB::timeSliceCounter = 0;
 
 TCB::~TCB() {
 
-    if(!isFinished()){
+    /*if(!isFinished()){
         if(next) next->prev = prev;
         else Scheduler::tail = prev;
         if(prev) prev->next = next;
         else Scheduler::head = next;
 
-    }
+    }*/
     delete[] stack;
     if(pid == 1 && funArg != nullptr) mem_free(funArg);
 
@@ -57,29 +56,6 @@ void TCB::dispatch() {
     TCB::contextSwitch(&old->context, &TCB::running->context);
 }
 
-TCB::TCB(thread_t *handle, void (*start_routine)(void *), void *arg, void *stack_space, int id) :
-                        stack(start_routine != nullptr ? (uint64*)stack_space : nullptr),
-                        context({start_routine != nullptr ? (uint64)wrapper : 0,
-                                 start_routine != nullptr ? (uint64)&stack[DEFAULT_STACK_SIZE/sizeof(uint64)] : 0})
-{
-    fun = start_routine;
-    funArg = arg;
-    timeSlice = DEFAULT_TIME_SLICE;
-    holder = nullptr;
-    blocked = false;
-    asleep = false;
-    close = 0;
-    next = nullptr;
-    prev = nullptr;
-    finished = false;
-    deleted = false;
-    *handle = this;
-    privilege = 0;
-    pid = id;
-
-    if(start_routine != nullptr && TCB::call == 0) Scheduler::put(this);
-}
-
 TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *arg, void *stack_space, int id) {
 
     if(TCB::call == 1 && *handle != nullptr) {
@@ -92,10 +68,10 @@ TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *ar
     thread->fun = start_routine;
     thread->funArg = arg;
     thread->pid = id;
-    thread->context.ra = (start_routine != nullptr ? (uint64)wrapper : 0);
-    thread->context.sp = (start_routine != nullptr ? (uint64)&thread->stack[DEFAULT_STACK_SIZE/sizeof(uint64)] : 0);
-    *handle = thread;
+    thread->context = {(start_routine != nullptr ? (uint64)wrapper : 0),
+                       (start_routine != nullptr ? (uint64)&thread->stack[DEFAULT_STACK_SIZE/sizeof(uint64)] : 0)};
 
+    *handle = thread;
     if(start_routine != nullptr && TCB::call == 0) Scheduler::put(thread);
 
     return thread;

@@ -12,7 +12,7 @@ public:
 template<typename T>
 void KernelObject<T>::ctor(void *addr) {
     T* obj = (T*) addr;
-    T temp;
+    T temp = T();
     *obj = temp;
 }
 

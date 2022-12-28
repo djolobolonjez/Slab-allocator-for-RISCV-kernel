@@ -69,7 +69,6 @@ public:
 private:
 
     TCB* next, *prev;
-    TCB(thread_t *handle, void (*start_routine)(void *), void *arg, void* stack_space, int id);
 
     uint64* stack;
     Context context;

@@ -37,8 +37,7 @@ private:
 
     size_t numOfSlabs;
 
-    static size_t estimateOrder(size_t slotSize);
-    static size_t getNumberOfObjects(size_t slabSize, size_t slotSize);
+    static size_t getOrder(size_t slotSize, size_t& numSlots);
     static void deallocSlabGroup(Slab* slab);
     static void objectCount(Slab* slab, int& free, int& allocated);
 

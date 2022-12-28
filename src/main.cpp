@@ -7,6 +7,7 @@
 #include "../h/slab.h"
 #include "../h/cache.h"
 #include "../h/SlabAllocator.h"
+#include "../h/kernelsem.h"
 
 void userMain();
 
@@ -18,10 +19,12 @@ void main(){
 
     kmem_init(space, blockNum);
 
+    TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, nullptr);
+    KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
+
+
     KernelConsole* instance = KernelConsole::getInstance();
     TCB* usermainThread = nullptr, * putcThread = nullptr, *mainThread = nullptr;
-
-    TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, nullptr);
 
     thread_create(&putcThread, KernelConsole::consoleput, nullptr);
     thread_create(&mainThread, nullptr, nullptr);

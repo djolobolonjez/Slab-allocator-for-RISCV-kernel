@@ -2,13 +2,15 @@
 #define KERNEL_SEM_H
 
 #include "../lib/hw.h"
+#include "../h/KernelObject.h"
 
 class TCB;
+class Cache;
 
-class KernelSem{
+class KernelSem : public KernelObject<KernelSem> {
 
 public:
-
+    KernelSem();
     ~KernelSem();
 
     int wait();  // wait on the semaphore
@@ -19,6 +21,8 @@ public:
     static KernelSem* createSem(sem_t* pSem, unsigned init_value); // creates a semaphore
 
     static int deleteSem(KernelSem*);  // deletes a semaphore
+
+    static Cache* cacheSem;
 
     void* operator new(size_t size);
     void* operator new[](size_t size);
