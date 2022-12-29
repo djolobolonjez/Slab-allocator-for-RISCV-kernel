@@ -7,6 +7,9 @@
 #define SSTATUS_SPIE (1L << 5) // previous intr enable
 #define SSTATUS_SIE (1L << 1)  // intr enable
 
+#define SSTATUS_SUM (1L << 18)
+#define SSTATUS_MXR (1l << 19)
+
 #define SIP_SSIP (1L << 1)
 #define SIP_STIP (1l << 5)
 #define SIP_SEIP (1L << 9)
@@ -45,6 +48,8 @@ public:
 
     // write in stvec register
     static void w_stvec(uint64 stvec);
+
+    static uint64 r_stval();
 
     // read from register sepc
     static uint64 r_sepc();

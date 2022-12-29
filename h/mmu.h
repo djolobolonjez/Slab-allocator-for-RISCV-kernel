@@ -9,6 +9,8 @@ static const uint64 PAGE_SIZE = 1 << 12;
 class MMU {
 
 private:
+    MMU() = default;
+
     enum EntryBits {
         Valid = 1 << 0,
         Read = 1 << 1,
@@ -27,9 +29,25 @@ private:
         UserReadExecute = Read | Execute | User,
         UserReadWriteExecute = Read | Write | Execute | User,
     };
+
+    static int levelTwoCounter; // increment when you fill new entry in level two table
+    static int levelThreeCounter;// increment when you fill new entry in level three table
+    static int levelTwoCursor;
+    static int levelThreeCursor;
+
+    static uint64 entry;
+
+    static void mapKernelSpace(uint64*);
+    static void mapDev(uint64 start, uint64 end, EntryBits bits);
+    static void zeroInit(uint64* addr, size_t n);
+
+public:
+    static uint64* rootTablePointer;
+    static void MMUInit();
+    static void updateEntry(uint64 vaddr);
+
+
 };
-
-
 
 
 #endif // MMU_H

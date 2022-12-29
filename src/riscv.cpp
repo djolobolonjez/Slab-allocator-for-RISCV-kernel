@@ -4,36 +4,8 @@
 #include "../h/kernelsem.h"
 #include "../h/sleeping.h"
 #include "../h/kernelcons.h"
-#include "../h/slab.h"
-
-char dig[] = "0123456789ABCDEF";
-
-void printI(int xx, int base, int sgn)
-{
-    char buf[16];
-    int i, neg;
-    uint x;
-
-    neg = 0;
-    if(sgn && xx < 0){
-        neg = 1;
-        x = -xx;
-    } else {
-        x = xx;
-    }
-
-    i = 0;
-    do{
-        buf[i++] = dig[x % base];
-    }while((x /= base) != 0);
-    if(neg)
-        buf[i++] = '-';
-
-    while(--i >= 0)
-        putc(buf[i]);
-
-}
-
+#include "../h/printing.hpp"
+#include "../h/mmu.h"
 
 void Riscv::sppUser() {
     asm volatile("csrw sepc, ra");
@@ -81,6 +53,12 @@ uint64 Riscv::r_stvec() {
 void Riscv::w_stvec(uint64 stvec){
 
     asm volatile ("csrw stvec, %[stvec]" : : [stvec] "r"(stvec));
+}
+
+uint64 Riscv::r_stval() {
+    uint64 volatile stval;
+    asm volatile("csrr %[stval], stval" : [stval] "=r"(stval));
+    return stval;
 }
 
 uint64 Riscv::r_sepc(){
@@ -255,7 +233,7 @@ void Riscv::trapHandler()  {
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ){
             
-            if(READ_READY){
+            /*if(READ_READY){
                 char c = C_READ;
                 KernelConsole* cons  = KernelConsole::getInstance();
                 if(cons->size < MAX_SIZE){
@@ -264,16 +242,23 @@ void Riscv::trapHandler()  {
                     cons->tail2 = (cons->tail2 + 1) % MAX_SIZE;
                     cons->emptyBuff2->signal();
                 }
-            }
+            }*/
         }
         else{
             plic_complete(irq);
         }
 
     }
+    else if (cause == 12 || cause == 13 || cause == 15) {
+        uint64 vaddr = Riscv::r_stval();
+        MMU::updateEntry(vaddr);
+        //printString("Page Fault!");
+    }
     else {
-        printI(cause, 10, 0);
+        printInt(cause);
     }
 
 
 }
+
+
