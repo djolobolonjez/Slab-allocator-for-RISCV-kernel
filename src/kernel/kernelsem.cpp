@@ -1,9 +1,9 @@
-#include "../h/scheduler.h"
-#include "../h/riscv.h"
-#include "../h/system.h"
-#include "../h/kernelsem.h"
-#include "../h/tcb.h"
-#include "../h/slab.h"
+#include "../../h/scheduler.h"
+#include "../../h/riscv.h"
+#include "../../h/system.h"
+#include "../../h/kernelsem.h"
+#include "../../h/tcb.h"
+#include "../../h/slab.h"
 
 Cache* KernelSem::cacheSem = nullptr;
 Cache* KernelSem::cacheBlocked = nullptr;

@@ -31,6 +31,7 @@ private:
     static FreeArea* returnBlock(int size, FreeArea* addr);
     static FreeArea* coalesceBuddy(int order, int index, FreeArea* addr);
 
+    friend class MMU;
 public:
     static int getBlockNum();
     static int buddyInit(void* space, int blockNum);

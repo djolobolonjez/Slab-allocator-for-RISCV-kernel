@@ -1,5 +1,5 @@
-#include "../h/buddy.h"
-#include "../h/SlabAllocator.h"
+#include "../../h/buddy.h"
+#include "../../h/SlabAllocator.h"
 
 void Slab::createSlab(size_t size, Cache* handle) {
     Slab* newSlab = (Slab*) Buddy::alloc(size);

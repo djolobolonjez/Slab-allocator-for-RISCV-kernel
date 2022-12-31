@@ -1,7 +1,6 @@
-#include "../h/cache.h"
-#include "../h/system.h"
-#include "../h/SlabAllocator.h"
-#include "../h/printing.hpp"
+#include "../../h/cache.h"
+#include "../../h/SlabAllocator.h"
+#include "../../h/printing.hpp"
 
 Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(void *)) {
     if (!CachePool::cacheTail) {
@@ -136,6 +135,7 @@ void* Cache::cacheAlloc() {
 }
 
 void Cache::cacheFree(void* objp) {
+    if(objp == nullptr) return;
     Slab::putObject(objp);
 }
 

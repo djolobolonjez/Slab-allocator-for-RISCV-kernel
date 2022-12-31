@@ -2,8 +2,8 @@
 #define SLAB_ALLOCATOR_H
 
 #include "../lib/hw.h"
-#include "../h/cache.h"
-#include "../h/system.h"
+#include "cache.h"
+#include "system.h"
 
 class Slab {
 private:

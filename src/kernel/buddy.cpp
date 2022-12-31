@@ -1,5 +1,5 @@
-#include "../h/buddy.h"
-#include "../h/system.h"
+#include "../../h/buddy.h"
+#include "../../h/system.h"
 
 void* Buddy::KERNEL_START_ADDR = nullptr;
 void* Buddy::KERNEL_END_ADDR = nullptr;

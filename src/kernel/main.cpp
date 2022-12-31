@@ -1,25 +1,18 @@
-#include "../h/riscv.h"
-#include "../h/tcb.h"
-#include "../h/syscall_cpp.hpp"
-#include "../h/kernelcons.h"
-#include "../h/scheduler.h"
-#include "../h/buddy.h"
-#include "../h/slab.h"
-#include "../h/cache.h"
-#include "../h/SlabAllocator.h"
-#include "../h/kernelsem.h"
-
-class UserThread : public Thread {
-public:
-    void run() override {
-        putc('1');
-    }
-
-};
+#include "../../h/riscv.h"
+#include "../../h/tcb.h"
+#include "../../h/syscall_cpp.hpp"
+#include "../../h/kernelcons.h"
+#include "../../h/scheduler.h"
+#include "../../h/buddy.h"
+#include "../../h/slab.h"
+#include "../../h/cache.h"
+#include "../../h/SlabAllocator.h"
+#include "../../h/kernelsem.h"
+#include "../../h/mmu.h"
 
 void userMain();
 
-void main(){
+int main() {
     Riscv::w_stvec((uint64)&Riscv::supervisorTrap);
 
     int blockNum = Buddy::getBlockNum();
@@ -27,16 +20,25 @@ void main(){
 
     kmem_init(space, blockNum);
 
+    MMU::MMUInit();
+
+    uint64 rootPPN = ((uint64) MMU::rootTablePointer) >> 12;
+    uint64 satp = (8UL << 60) | rootPPN;
+
+    Riscv::ms_sstatus(  SSTATUS_SUM);
+    asm ("csrw satp, %0" :: "r"(satp));
+
     TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, nullptr);
     KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
 
     KernelConsole* console = KernelConsole::getInstance();
-    TCB* usermainThread = nullptr, * putcThread = nullptr, *mainThread = nullptr;
+    TCB* usermainThread = nullptr, *putcThread = nullptr, *mainThread = nullptr;
 
+    TCB::createThread(&putcThread, KernelConsole::consoleput, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0);
 
-    thread_create(&putcThread, KernelConsole::consoleput, nullptr);
+    //thread_create(&putcThread, KernelConsole::consoleput, nullptr);
     thread_create(&mainThread, nullptr, nullptr);
-    thread_create(&Scheduler::idleThread, &Scheduler::idle, nullptr);
+    thread_create(&Scheduler::idleThread, Scheduler::idle, nullptr);
 
     TCB::running = mainThread;
 
@@ -81,15 +83,15 @@ void main(){
     putcThread->setFinished(true);
     Scheduler::idleThread->setFinished(true);
 
-    /*delete putcThread;
+    delete putcThread;
     delete Scheduler::idleThread;
-    delete usermainThread;*/
+    delete usermainThread;
     delete console;
+    mainThread->setFinished(true);
+    delete mainThread; // TODO - srediti dealokaciju!!!
 
     kmem_cache_destroy(TCB::cacheTCB);
     kmem_cache_destroy(KernelSem::cacheSem);
 
-    mainThread->setFinished(true);
-    //delete mainThread;
-
+    return 0;
 }

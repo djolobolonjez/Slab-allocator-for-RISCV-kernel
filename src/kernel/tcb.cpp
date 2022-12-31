@@ -1,9 +1,8 @@
-#include "../h/riscv.h"
-#include "../h/scheduler.h"
-#include "../h/tcb.h"
-#include "../h/syscall_c.h"
-#include "../h/slab.h"
-
+#include "../../h/riscv.h"
+#include "../../h/scheduler.h"
+#include "../../h/tcb.h"
+#include "../../h/syscall_c.h"
+#include "../../h/slab.h"
 
 Cache* TCB::cacheTCB = nullptr;
 TCB* TCB::running;
@@ -20,7 +19,11 @@ TCB::~TCB() {
         else Scheduler::head = next;
 
     }*/
-    delete[] stack;
+    // TODO - dodati dtor za TCB i za KernelSem!!
+
+    if (getPrivilege() == 0) delete[] stack;
+    else kfree(stack);
+
     if(pid == 1 && funArg != nullptr) mem_free(funArg);
 
 }

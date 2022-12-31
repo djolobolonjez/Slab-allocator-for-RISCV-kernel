@@ -1,6 +1,6 @@
-#include "../h/scheduler.h"
-#include "../h/tcb.h"
-#include "../h/syscall_c.h"
+#include "../../h/scheduler.h"
+#include "../../h/tcb.h"
+#include "../../h/syscall_c.h"
 
 TCB* Scheduler::head;
 TCB* Scheduler::tail;

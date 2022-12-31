@@ -11,9 +11,18 @@ SECTIONS
 
   .text : {
     *(.entry_os) . = ALIGN(0x1000);
-    *(EXCLUDE_FILE(*usermain.o) .text .text.*)
+    *(EXCLUDE_FILE(*user/*o *test/*o) .text .text.*)
     . = ALIGN(0x1000);
     PROVIDE(etext = .);
+  }
+  
+  .u_text : {
+    . = ALIGN(0x1000);
+    PROVIDE(USER_CODE_START = .);
+    *user/*(.text .text.*)
+    *test/*(.text .text.*)
+    PROVIDE(USER_CODE_END = .);
+    . = ALIGN(0x1000);
   }
 
   .rodata : {
@@ -37,6 +46,5 @@ SECTIONS
     *(.bss .bss.*)
   }
 
-  . = ALIGN(0x1000);
   PROVIDE(end = .);
 }

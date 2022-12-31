@@ -1,7 +1,7 @@
-#include "../h/CachePool.h"
-#include "../h/buddy.h"
-#include "../h/cache.h"
-#include "../h/SlabAllocator.h"
+#include "../../h/CachePool.h"
+#include "../../h/buddy.h"
+#include "../../h/cache.h"
+#include "../../h/SlabAllocator.h"
 
 Cache* CachePool::memoryBuffers[BUFFER_NUM] = {nullptr};
 
@@ -140,6 +140,7 @@ void* CachePool::allocateBuffer(size_t size) {
 }
 
 void CachePool::deallocateBuffer(const void *objp) {
+    if (objp == nullptr) return;
     Slab::putObject(const_cast<void*>(objp));
 }
 

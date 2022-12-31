@@ -4,6 +4,9 @@
 #include "../lib/hw.h"
 #include "defs.h"
 
+extern const void* USER_CODE_START;
+extern const void* USER_CODE_END;
+
 #define MEM_ALLOC 0x01
 #define MEM_FREE 0x02
 

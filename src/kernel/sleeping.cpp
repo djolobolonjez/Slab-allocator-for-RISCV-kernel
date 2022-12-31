@@ -1,7 +1,7 @@
-#include "../h/sleeping.h"
-#include "../h/scheduler.h"
-#include "../h/tcb.h"
-#include "../h/slab.h"
+#include "../../h/sleeping.h"
+#include "../../h/scheduler.h"
+#include "../../h/tcb.h"
+#include "../../h/slab.h"
 
 Sleeping::SleepQueue* Sleeping::head = nullptr;
 Cache* Sleeping::cacheSleep = nullptr;

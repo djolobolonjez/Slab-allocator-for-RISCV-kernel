@@ -1,7 +1,7 @@
-#include "../h/slab.h"
-#include "../h/buddy.h"
-#include "../h/cache.h"
-#include "../h/SlabAllocator.h"
+#include "../../h/slab.h"
+#include "../../h/buddy.h"
+#include "../../h/cache.h"
+#include "../../h/SlabAllocator.h"
 
 void
 kmem_init(void* space, int block_num)

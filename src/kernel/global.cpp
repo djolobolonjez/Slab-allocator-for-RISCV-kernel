@@ -1,4 +1,4 @@
-#include "../lib/hw.h"
+#include "../../lib/hw.h"
 
 extern "C" void memcpy(void* dest, const void* src, size_t n) {
     uint8* d = (uint8*)dest, *s = (uint8*)src;

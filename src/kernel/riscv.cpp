@@ -1,11 +1,11 @@
-#include "../h/MemoryAllocator.h"
-#include "../h/riscv.h"
-#include "../h/tcb.h"
-#include "../h/kernelsem.h"
-#include "../h/sleeping.h"
-#include "../h/kernelcons.h"
-#include "../h/printing.hpp"
-#include "../h/mmu.h"
+#include "../../h/MemoryAllocator.h"
+#include "../../h/riscv.h"
+#include "../../h/tcb.h"
+#include "../../h/kernelsem.h"
+#include "../../h/sleeping.h"
+#include "../../h/kernelcons.h"
+#include "../../h/printing.hpp"
+#include "../../h/mmu.h"
 
 void Riscv::sppUser() {
     asm volatile("csrw sepc, ra");
@@ -233,7 +233,7 @@ void Riscv::trapHandler()  {
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ){
             
-            /*if(READ_READY){
+            if(READ_READY){
                 char c = C_READ;
                 KernelConsole* cons  = KernelConsole::getInstance();
                 if(cons->size < MAX_SIZE){
@@ -242,23 +242,53 @@ void Riscv::trapHandler()  {
                     cons->tail2 = (cons->tail2 + 1) % MAX_SIZE;
                     cons->emptyBuff2->signal();
                 }
-            }*/
+            }
         }
         else{
             plic_complete(irq);
         }
 
     }
-    else if (cause == 12 || cause == 13 || cause == 15) {
+    else if (cause == 12) {
         uint64 vaddr = Riscv::r_stval();
-        MMU::updateEntry(vaddr);
-        //printString("Page Fault!");
+        uint64 status = Riscv::r_sstatus();
+
+        MMU::invalid(vaddr);
+
+        if (status & SSTATUS_SPP)
+            MMU::pmap(vaddr, vaddr, MMU::ReadWriteExecute);
+        else {
+            MMU::privilegeSwap = true;
+            MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
+        }
+    }
+    else if (cause == 13 || cause == 15) {
+        uint64 vaddr = Riscv::r_stval();
+        uint64 status = Riscv::r_sstatus();
+
+        MMU::invalid(vaddr);
+
+        if (status & SSTATUS_SPP) {
+            MMU::EntryBits bits;
+            if ((uint64*)vaddr >= (uint64*)HEAP_START_ADDR)
+                bits = MMU::UserReadWriteExecute;
+            else
+                bits = MMU::ReadWriteExecute;
+            MMU::pmap(vaddr, vaddr, bits);
+        }
+        else {
+            if (MMU::kspace(vaddr)) {
+                if (MMU::privilegeSwap) {
+                    MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
+                    MMU::privilegeSwap = false; // ne valja ovo sa flagom!!
+                }
+            }
+            else {
+                MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
+            }
+        }
     }
     else {
         printInt(cause);
     }
-
-
 }
-
-

@@ -2,7 +2,8 @@
 #define KERNEL_SEM_H
 
 #include "../lib/hw.h"
-#include "../h/KernelObject.h"
+#include "KernelObject.h"
+#include "system.h"
 
 class TCB;
 class Cache;

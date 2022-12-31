@@ -2,7 +2,7 @@
 #define CACHE_H
 
 #include "../lib/hw.h"
-#include "../h/CachePool.h"
+#include "CachePool.h"
 
 class Slab;
 

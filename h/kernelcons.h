@@ -1,7 +1,7 @@
 #ifndef kernelcons_h
 #define kernelcons_h
 
-#include "../h/syscall_c.h"
+#include "syscall_c.h"
 
 class KernelConsole{
 
@@ -9,9 +9,6 @@ private:
     KernelConsole();
 
     static KernelConsole* instance;
-
-    /*char input_buff[MAX_SIZE];
-    char output_buff[MAX_SIZE];*/
 
     char* input_buff;
     char* output_buff;

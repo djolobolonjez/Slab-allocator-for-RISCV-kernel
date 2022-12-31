@@ -2,9 +2,9 @@
 #define tcb_h
 
 
-#include "../h/MemoryAllocator.h"
-#include "../h/system.h"
-#include "../h/KernelObject.h"
+#include "MemoryAllocator.h"
+#include "system.h"
+#include "KernelObject.h"
 
 class Scheduler;
 class KernelSem;
@@ -71,7 +71,7 @@ private:
     TCB* next, *prev;
 
     uint64* stack;
-    Context context;
+    Context context = {0, 0};
 
     bool finished;
     bool blocked;

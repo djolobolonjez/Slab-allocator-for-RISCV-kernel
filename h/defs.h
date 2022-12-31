@@ -1,6 +1,8 @@
 #ifndef defs_h
 #define defs_h
 
+#include "../lib/hw.h"
+
 const int EOF = -1;
 
 class Cache;

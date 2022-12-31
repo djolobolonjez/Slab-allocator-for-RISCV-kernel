@@ -30,23 +30,17 @@ private:
         UserReadWriteExecute = Read | Write | Execute | User,
     };
 
-    static int levelTwoCounter; // increment when you fill new entry in level two table
-    static int levelThreeCounter;// increment when you fill new entry in level three table
-    static int levelTwoCursor;
-    static int levelThreeCursor;
-
-    static uint64 entry;
-
-    static void mapKernelSpace(uint64*);
-    static void mapDev(uint64 start, uint64 end, EntryBits bits);
+    static void pmap(uint64 start, uint64 end, EntryBits bits);
     static void zeroInit(uint64* addr, size_t n);
 
+    static bool privilegeSwap;
+
+    friend class Riscv;
 public:
     static uint64* rootTablePointer;
     static void MMUInit();
-    static void updateEntry(uint64 vaddr);
-
-
+    static void invalid(uint64 vaddr);
+    static bool kspace(uint64 vaddr);
 };
 
 

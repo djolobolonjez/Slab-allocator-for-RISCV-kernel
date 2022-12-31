@@ -1,8 +1,7 @@
-#include "../h/kernelcons.h"
-#include "../h/riscv.h"
-#include "../h/MemoryAllocator.h"
-#include "../h/slab.h"
-#include "../h/CachePool.h"
+#include "../../h/kernelcons.h"
+#include "../../h/riscv.h"
+#include "../../h/slab.h"
+#include "../../h/CachePool.h"
 
 KernelConsole* KernelConsole::instance = nullptr;
 
