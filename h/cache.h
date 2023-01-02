@@ -8,7 +8,7 @@ class Slab;
 
 class Cache {
 
-private:
+protected:
     enum SlabGroup {
         FULL,
         PARTIAL,
@@ -36,6 +36,7 @@ private:
     size_t objNum; // number of objects in one slab
 
     size_t numOfSlabs;
+    int type;
 
     static size_t getOrder(size_t slotSize, size_t& numSlots);
     static void deallocSlabGroup(Slab* slab);
@@ -49,6 +50,7 @@ public:
 
     void setGroup(ObjectGroup _group) { this->group = _group; }
     void setShrink(int _shrink) { this->shrink = _shrink; }
+    void setType(int _type) { this->type = _type; }
 
     ObjectGroup getGroup() { return this->group; }
 
@@ -56,6 +58,8 @@ public:
     void cacheFree(void* objp);
     int cacheShrink();
     void printInfo();
+
+    void slabAlloc();
 
     static void destroyCache(Cache* cachep);
 

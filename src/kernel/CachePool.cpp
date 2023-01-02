@@ -1,6 +1,5 @@
 #include "../../h/CachePool.h"
 #include "../../h/buddy.h"
-#include "../../h/cache.h"
 #include "../../h/SlabAllocator.h"
 
 Cache* CachePool::memoryBuffers[BUFFER_NUM] = {nullptr};
@@ -121,7 +120,7 @@ void CachePool::SlabInit() {
         size_t numObjects = (BLOCK_SIZE < objSize ? 1 : BLOCK_SIZE / objSize);
         size_t size = sizeof(Slab) + numObjects * sizeof(unsigned);
 
-        memoryBuffers[i] = new Cache("Slab cache", size, nullptr, nullptr);
+        memBuffSlabs[i] = new Cache("Slab cache", size, nullptr, nullptr);
     }
 }
 
@@ -140,14 +139,18 @@ void* CachePool::allocateBuffer(size_t size) {
         return nullptr; // Exception
 
     int index = getPowerOfTwo(size);
-    if (!memoryBuffers[index]) memoryBuffers[index] = new Cache("size-", 1 << (MIN_BUFF_ORDER + index), nullptr, nullptr);
+
+    if (!memoryBuffers[index]) {
+        memoryBuffers[index] = new Cache("size-", 1 << (MIN_BUFF_ORDER + index), nullptr, nullptr);
+        bufferInit(index, size);
+    }
 
     return memoryBuffers[index]->cacheAlloc(); // TODO - ne treba da poziva cacheAlloc nego drugu metodu koja drugacije alocira Slab-ove
 }
 
 void CachePool::deallocateBuffer(const void *objp) {
     if (objp == nullptr) return;
-    Slab::putObject(const_cast<void*>(objp));
+    Slab::putBuffer(const_cast<void*>(objp)); // TODO - neka putBuffer metoda
 }
 
 size_t CachePool::powerOfTwoSize(size_t x) {
@@ -156,4 +159,26 @@ size_t CachePool::powerOfTwoSize(size_t x) {
         value <<= 1;
 
     return value;
+}
+
+size_t CachePool::getOrder(size_t x) {
+    size_t order = 0;
+    size_t size = BLOCK_SIZE;
+
+    while (x > size) {
+        order++;
+        size += BLOCK_SIZE;
+    }
+
+    return order;
+}
+
+void CachePool::bufferInit(int index, size_t size) {
+    memoryBuffers[index]->setGroup(Cache::SMALL_MEMORY_BUFFER);
+    memoryBuffers[index]->setType(1);
+    memoryBuffers[index]->objNum = (size > BLOCK_SIZE ? 1 : (BLOCK_SIZE / size));
+
+    size_t order = getOrder(size);
+    memoryBuffers[index]->slabOrder = order;
+    memoryBuffers[index]->slabSize = (1 << order) * BLOCK_SIZE;
 }

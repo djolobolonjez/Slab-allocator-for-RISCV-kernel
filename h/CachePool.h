@@ -26,8 +26,6 @@ private:
     static CacheRecord* createRecord();
     static void destroyRecord(CacheRecord* record);
 
-    static int getPowerOfTwo(size_t x);
-
     friend class Cache;
 public:
     static void CachePoolInit();
@@ -38,6 +36,13 @@ public:
     static void* allocateBuffer(size_t size);
     static void deallocateBuffer(const void* objp);
 
+    static Cache* getSlabCache(int index) { return memBuffSlabs[index]; }
+    static Cache* getBufferCache(int index) { return memoryBuffers[index]; }
+
+    static void bufferInit(int index, size_t size);
+    static size_t getOrder(size_t x);
+
+    static int getPowerOfTwo(size_t x);
     static size_t powerOfTwoSize(size_t x);
 };
 

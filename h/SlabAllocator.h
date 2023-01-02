@@ -24,11 +24,14 @@ private:
     friend class Cache;
 public:
     static void createSlab(size_t size, Cache* handle);
+    static void createBufferSlab(size_t size, Cache* handle);
+    static void initSlab(Slab* slab, Cache* handle);
+    static void updateSlab(Slab* slabHeader);
+
     static void destroySlab(Slab* slab);
     static void* takeObject(Slab* slab);
     static void putObject(void* objp);
-
-
+    static void putBuffer(void* objp);
 
 };
 

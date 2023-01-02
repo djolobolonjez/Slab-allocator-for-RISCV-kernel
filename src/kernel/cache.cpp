@@ -21,6 +21,7 @@ Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(v
     this->shrink = 1;
 
     this->group = ObjectGroup::KERNEL_OBJECT;
+    this->type = 0;
 
     this->slabOrder = getOrder(this->slotSize, this->objNum);
     this->slabSize = (1 << this->slabOrder) * BLOCK_SIZE;
@@ -119,7 +120,7 @@ void* Cache::cacheAlloc() {
     size_t oldNumOfSlabs = this->numOfSlabs;
 
     if (this->slabsPartial == nullptr && this->slabsFree == nullptr)
-        Slab::createSlab(this->slabOrder, this);
+        slabAlloc();
     else {
         if (this->slabsPartial == nullptr)
             moveFree(this->slabsFree, Cache::PARTIAL);
@@ -239,4 +240,11 @@ void Cache::objectCount(Slab* slab, int &free, int &allocated) {
         allocated += (curr->numOfSlots - curr->numOfFreeSlots);
         curr = curr->next;
     }
+}
+
+void Cache::slabAlloc() {
+    if (this->type == 0)
+        Slab::createSlab(this->slabOrder, this);
+    else
+        Slab::createBufferSlab(this->slabOrder, this);
 }
