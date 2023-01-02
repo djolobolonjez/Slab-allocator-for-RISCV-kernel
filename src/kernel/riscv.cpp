@@ -7,15 +7,26 @@
 #include "../../h/printing.hpp"
 #include "../../h/mmu.h"
 
-void Riscv::sppUser() {
-    asm volatile("csrw sepc, ra");
+void Riscv::sppUser(void (*fn)(void*), void* arg) {
+    uint64 ra;
+    asm volatile ("mv %[ra], ra" : [ra] "=r"(ra));
+
     Riscv::mc_sstatus(SSTATUS_SPP);
+    asm volatile("csrw sepc, %[function]" : : [function] "r"(fn));
+    asm volatile ("mv a0, %[arg]" : : [arg] "r"(arg));
+
+    asm volatile ("mv ra, %[ra]" : : [ra] "r"(ra));
     asm volatile("sret");
 }
 
-void Riscv::sppKernel() {
-    asm volatile("csrw sepc, ra");
-    Riscv::ms_sstatus(SSTATUS_SPP);
+void Riscv::sppKernel(void (*fn)(void*), void* arg) {
+    uint64 ra;
+    asm volatile ("mv %[ra], ra" : [ra] "=r"(ra));
+
+    asm volatile("csrw sepc, %[function]" : : [function] "r"(fn));
+    asm volatile ("mv a0, %[arg]" : : [arg] "r"(arg));
+
+    asm volatile ("mv ra, %[ra]" : : [ra] "r"(ra));
     asm volatile("sret");
 }
 
@@ -214,22 +225,24 @@ void Riscv::trapHandler()  {
     }
    
     else if(cause == 0x8000000000000001UL){
+        volatile uint64 sepc = r_sepc();
+        volatile uint64 sstatus = r_sstatus();
 
         TCB::timeSliceCounter++;
+        Riscv::mc_sip(SIP_SSIP);
+
         Sleeping::remove();
-
-        if(TCB::timeSliceCounter >= TCB::running->getTimeSlice()){
-
-            volatile uint64 sepc = r_sepc();
-            volatile uint64 sstatus = r_sstatus();
+        if(TCB::timeSliceCounter >= TCB::running->getTimeSlice()) {
             TCB::timeSliceCounter = 0;
             TCB::yield();
-            w_sstatus(sstatus);
-            w_sepc(sepc);
         }
-        Riscv::mc_sip(SIP_SSIP);
+        w_sstatus(sstatus);
+        w_sepc(sepc);
     }
     else if(cause == 0x8000000000000009UL){
+        volatile uint64 sepc = r_sepc();
+        volatile uint64 sstatus = r_sstatus();
+
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ){
             
@@ -248,8 +261,11 @@ void Riscv::trapHandler()  {
             plic_complete(irq);
         }
 
+        w_sstatus(sstatus);
+        w_sepc(sepc);
     }
-    else if (cause == 12) {
+
+    else if(cause == 12) {
         uint64 vaddr = Riscv::r_stval();
         uint64 status = Riscv::r_sstatus();
 
@@ -257,10 +273,8 @@ void Riscv::trapHandler()  {
 
         if (status & SSTATUS_SPP)
             MMU::pmap(vaddr, vaddr, MMU::ReadWriteExecute);
-        else {
-            MMU::privilegeSwap = true;
+        else
             MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
-        }
     }
     else if (cause == 13 || cause == 15) {
         uint64 vaddr = Riscv::r_stval();
@@ -268,24 +282,11 @@ void Riscv::trapHandler()  {
 
         MMU::invalid(vaddr);
 
-        if (status & SSTATUS_SPP) {
-            MMU::EntryBits bits;
-            if ((uint64*)vaddr >= (uint64*)HEAP_START_ADDR)
-                bits = MMU::UserReadWriteExecute;
-            else
-                bits = MMU::ReadWriteExecute;
-            MMU::pmap(vaddr, vaddr, bits);
+        if (MMU::kspace(vaddr) && !(status & SSTATUS_SPP)) {
+            printString("Access violation!");
         }
         else {
-            if (MMU::kspace(vaddr)) {
-                if (MMU::privilegeSwap) {
-                    MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
-                    MMU::privilegeSwap = false; // ne valja ovo sa flagom!!
-                }
-            }
-            else {
-                MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
-            }
+            MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
         }
     }
     else {

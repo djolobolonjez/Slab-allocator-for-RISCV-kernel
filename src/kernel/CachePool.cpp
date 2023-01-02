@@ -4,6 +4,7 @@
 #include "../../h/SlabAllocator.h"
 
 Cache* CachePool::memoryBuffers[BUFFER_NUM] = {nullptr};
+Cache* CachePool::memBuffSlabs[BUFFER_NUM] = {nullptr};
 
 CachePool::CacheRecord* CachePool::head = nullptr;
 CachePool::CacheRecord* CachePool::tail = nullptr;
@@ -116,8 +117,11 @@ void CachePool::destroyRecord(CacheRecord* record) {
 void CachePool::SlabInit() {
 
     for (unsigned i = 0; i < BUFFER_NUM; i++) {
-        memoryBuffers[i] = new Cache("size-", 1 << (MIN_BUFF_ORDER + i), nullptr, nullptr);
-        memoryBuffers[i]->setGroup(Cache::SMALL_MEMORY_BUFFER);
+        size_t objSize = 1 << (MIN_BUFF_ORDER + i);
+        size_t numObjects = (BLOCK_SIZE < objSize ? 1 : BLOCK_SIZE / objSize);
+        size_t size = sizeof(Slab) + numObjects * sizeof(unsigned);
+
+        memoryBuffers[i] = new Cache("Slab cache", size, nullptr, nullptr);
     }
 }
 
@@ -136,7 +140,9 @@ void* CachePool::allocateBuffer(size_t size) {
         return nullptr; // Exception
 
     int index = getPowerOfTwo(size);
-    return memoryBuffers[index]->cacheAlloc();
+    if (!memoryBuffers[index]) memoryBuffers[index] = new Cache("size-", 1 << (MIN_BUFF_ORDER + index), nullptr, nullptr);
+
+    return memoryBuffers[index]->cacheAlloc(); // TODO - ne treba da poziva cacheAlloc nego drugu metodu koja drugacije alocira Slab-ove
 }
 
 void CachePool::deallocateBuffer(const void *objp) {

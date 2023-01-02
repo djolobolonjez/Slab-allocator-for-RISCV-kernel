@@ -65,15 +65,13 @@ int Thread::sleep(time_t time) {
     return time_sleep(time);
 }
 
-Thread::~Thread() { /*delete myHandle;*/}
+Thread::~Thread() { }
 
 Semaphore::Semaphore(unsigned int init) {
     sem_open(&myHandle, init);
 }
 
-Semaphore::~Semaphore() {
-    /*delete myHandle; */// TODO - SREDITI OVO OBAVEZNO!!!!
-}
+Semaphore::~Semaphore() { }
 
 int Semaphore::wait() {
     return sem_wait(myHandle);

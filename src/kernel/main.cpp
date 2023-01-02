@@ -9,6 +9,7 @@
 #include "../../h/SlabAllocator.h"
 #include "../../h/kernelsem.h"
 #include "../../h/mmu.h"
+#include "../../h/sleeping.h"
 
 void userMain();
 
@@ -36,7 +37,6 @@ int main() {
 
     TCB::createThread(&putcThread, KernelConsole::consoleput, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0);
 
-    //thread_create(&putcThread, KernelConsole::consoleput, nullptr);
     thread_create(&mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, Scheduler::idle, nullptr);
 
@@ -83,13 +83,18 @@ int main() {
     putcThread->setFinished(true);
     Scheduler::idleThread->setFinished(true);
 
-    delete putcThread;
+    asm volatile ("csrw satp, zero");
+
+    // TODO - deallocate all page tables
+
+    /*delete putcThread;
     delete Scheduler::idleThread;
-    delete usermainThread;
+    delete usermainThread;*/
     delete console;
     mainThread->setFinished(true);
-    delete mainThread; // TODO - srediti dealokaciju!!!
+    //delete mainThread; // TODO - srediti dealokaciju!!!
 
+    kmem_cache_destroy(Sleeping::cacheSleep);
     kmem_cache_destroy(TCB::cacheTCB);
     kmem_cache_destroy(KernelSem::cacheSem);
 

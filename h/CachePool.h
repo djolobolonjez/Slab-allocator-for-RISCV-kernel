@@ -21,6 +21,7 @@ private:
     static Cache* cacheHead, *cacheTail;
 
     static Cache* memoryBuffers[BUFFER_NUM];
+    static Cache* memBuffSlabs[BUFFER_NUM];
 
     static CacheRecord* createRecord();
     static void destroyRecord(CacheRecord* record);

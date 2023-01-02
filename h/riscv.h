@@ -21,9 +21,9 @@ class Riscv{
 
 public:
 
-    static void sppKernel();
+    static void sppKernel(void (*fn)(void*), void* arg);
 
-    static void sppUser();
+    static void sppUser(void (*fn)(void*), void* arg);
 
     // push x3..x31 on stack
     static void pushRegisters();

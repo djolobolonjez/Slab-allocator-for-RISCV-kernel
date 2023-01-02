@@ -20,12 +20,11 @@ private:
 
     static SleepQueue* head;
 
-    static Cache* cacheSleep;
-
     static SleepQueue* getNode();  // creates a node for sleeping queue
     static void deleteNode(SleepQueue*);  // delete the node when the thread wakes up
 
 public:
+    static Cache* cacheSleep;
 
     static void remove(); // remove the thread from sleeping queue
     static void add(time_t);  // put the thread into sleeping queue

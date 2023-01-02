@@ -83,10 +83,9 @@ TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *ar
 void TCB::wrapper() {
 
     if(TCB::running->getPrivilege() == 0)
-        Riscv::sppUser();
+        Riscv::sppUser(TCB::running->fun, TCB::running->funArg);
     else
-        Riscv::sppKernel();
-    TCB::running->fun(TCB::running->funArg);
+        Riscv::sppKernel(TCB::running->fun, TCB::running->funArg);
     thread_exit();
 }
 
