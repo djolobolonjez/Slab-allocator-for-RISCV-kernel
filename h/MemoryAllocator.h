@@ -22,7 +22,7 @@ private:
 
     // memory coalescing
     static int tryToJoin(BlockHeader* curr);
-
+    static void tryToUnmap(BlockHeader* addr);
 public:
 
     // allocate memory on heap

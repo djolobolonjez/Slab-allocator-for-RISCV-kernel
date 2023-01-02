@@ -1,7 +1,7 @@
-/*#include "../h/syscall_cpp.hpp"
-#include "../h/printing.hpp"*/
+/*#include "../../h/syscall_cpp.hpp"
+#include "../../h/printing.hpp"
 
-/*bool finished = false;
+bool finished = false;
 
 class UserThread : public Thread {
 
@@ -23,6 +23,7 @@ public:
 	t1->start();
 	
 	while (!finished) Thread::dispatch();
+    delete t1;
 }*/
 //#include "../test/Threads_C_API_test.hpp" // zadatak 2, niti C API i sinhrona promena konteksta
 //#include "../test/Threads_CPP_API_test.hpp" // zadatak 2., niti CPP API i sinhrona promena konteksta

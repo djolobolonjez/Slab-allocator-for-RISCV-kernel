@@ -269,7 +269,7 @@ void Riscv::trapHandler()  {
         uint64 vaddr = Riscv::r_stval();
         uint64 status = Riscv::r_sstatus();
 
-        MMU::invalid(vaddr);
+        MMU::invalid(vaddr, MMU::PAGE_FAULT);
 
         if (status & SSTATUS_SPP)
             MMU::pmap(vaddr, vaddr, MMU::ReadWriteExecute);
@@ -280,7 +280,7 @@ void Riscv::trapHandler()  {
         uint64 vaddr = Riscv::r_stval();
         uint64 status = Riscv::r_sstatus();
 
-        MMU::invalid(vaddr);
+        MMU::invalid(vaddr, MMU::PAGE_FAULT);
 
         if (MMU::kspace(vaddr) && !(status & SSTATUS_SPP)) {
             printString("Access violation!");

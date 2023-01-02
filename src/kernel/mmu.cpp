@@ -3,7 +3,6 @@
 #include "../../h/system.h"
 
 uint64* MMU::rootTablePointer = nullptr;
-bool MMU::privilegeSwap = false;
 
 void MMU::MMUInit() {
     rootTablePointer = (uint64*) Buddy::alloc(0);
@@ -60,7 +59,7 @@ void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
     }
 }
 
-void MMU::invalid(uint64 vaddr) {
+void MMU::invalid(uint64 vaddr, MMU_FLAGS flags) {
     vaddr &= ~(PAGE_SIZE - 1);
     uint64 vpn[] = {(vaddr >> 12) & 0x1ffUL, (vaddr >> 21) & 0x1ffUL, (vaddr >> 30) & 0x1ffUL};
     uint64* levelTwo, *levelThree;
@@ -75,6 +74,23 @@ void MMU::invalid(uint64 vaddr) {
     levelThree = (uint64*)((levelTwo[vpn[1]] >> 10) << 12);
     uint64 pgDesc = 0;
     levelThree[vpn[0]] = pgDesc;
+
+    if (flags == PAGE_UNMAP) {
+        size_t entryNum = PAGE_SIZE / sizeof(uint64);
+        for (size_t i = 0; i < entryNum; i++)
+            if (levelThree[i] != 0)
+                return;
+
+        levelTwo[vpn[1]] = pgDesc;
+        Buddy::free(levelThree, 0);
+
+        for (size_t i = 0; i < entryNum; i++)
+            if (levelTwo[i] != 0)
+                return;
+
+        rootTablePointer[vpn[2]] = pgDesc;
+        Buddy::free(levelTwo, 0);
+    }
 }
 
 void MMU::zeroInit(uint64 *addr, size_t n) {
@@ -86,5 +102,16 @@ bool MMU::kspace(uint64 vaddr) {
     if ((uint64*)vaddr >= Buddy::KERNEL_START_ADDR && (uint64*)vaddr < Buddy::KERNEL_END_ADDR)
         return true;
     return false;
+}
+
+void MMU::punmap(uint64 start, uint64 end) {
+    uint64 mask = ~(PAGE_SIZE - 1);
+    start &= mask, end &= mask;
+
+    size_t pageNum = (end - start) / PAGE_SIZE;
+    for (unsigned i = 0; i <= pageNum; i++) {
+        invalid(start, PAGE_UNMAP);
+        start += PAGE_SIZE;
+    }
 }
 

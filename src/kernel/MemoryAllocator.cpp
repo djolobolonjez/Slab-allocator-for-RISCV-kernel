@@ -1,4 +1,6 @@
 #include "../../h/MemoryAllocator.h"
+#include "../../h/mmu.h"
+#include "../../h/system.h"
 
 MemoryAllocator::BlockHeader* MemoryAllocator::fmem_head = nullptr;
 int MemoryAllocator::init = 0;
@@ -93,10 +95,34 @@ int MemoryAllocator::kmem_free(void* addr){
     if(newBlock->next) newBlock->next->prev = newBlock;
     if(curr) curr->next = newBlock;
     else MemoryAllocator::fmem_head = newBlock;
+    tryToUnmap(newBlock);
 
-    tryToJoin(newBlock);
-    tryToJoin(curr);
+    if (tryToJoin(newBlock) > 0)
+        tryToUnmap(newBlock);
+
+    if (tryToJoin(curr) > 0)
+        tryToUnmap(curr);
 
     return 0;
 
+}
+
+void MemoryAllocator::tryToUnmap(BlockHeader *addr) {
+    uint64 start = (uint64) addr;
+
+    size_t offset = addr->size;
+    uint64 end = (uint64)((uint8*)addr + offset);
+
+    if (start % BLOCK_SIZE != 0) {
+        start &= ~(BLOCK_SIZE - 1);
+        start += BLOCK_SIZE;
+    }
+
+    if (end % BLOCK_SIZE != 0) {
+        end &= ~(BLOCK_SIZE - 1);
+    }
+
+    if (end <= start) return; // Cannot free table entry
+
+    MMU::punmap(start, end);
 }

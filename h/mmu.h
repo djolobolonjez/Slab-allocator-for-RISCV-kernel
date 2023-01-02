@@ -11,6 +11,11 @@ class MMU {
 private:
     MMU() = default;
 
+    enum MMU_FLAGS {
+        PAGE_FAULT,
+        PAGE_UNMAP
+    };
+
     enum EntryBits {
         Valid = 1 << 0,
         Read = 1 << 1,
@@ -31,15 +36,16 @@ private:
     };
 
     static void pmap(uint64 start, uint64 end, EntryBits bits);
+    static void punmap(uint64 start, uint64 end);
+
+    static void invalid(uint64 vaddr, MMU_FLAGS flags);
     static void zeroInit(uint64* addr, size_t n);
 
-    static bool privilegeSwap;
-
     friend class Riscv;
+    friend class MemoryAllocator;
 public:
     static uint64* rootTablePointer;
     static void MMUInit();
-    static void invalid(uint64 vaddr);
     static bool kspace(uint64 vaddr);
 };
 
