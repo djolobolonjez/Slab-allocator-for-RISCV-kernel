@@ -34,16 +34,18 @@ int main() {
     KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
 
     KernelConsole* console = KernelConsole::getInstance();
-    TCB* usermainThread = nullptr, *putcThread = nullptr, *mainThread = nullptr;
+    TCB* usermainThread = nullptr, *putcThread = nullptr, *mainThread = nullptr, *getcThread = nullptr;
 
     TCB::createThread(&putcThread, KernelConsole::consoleput, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0);
 
+    TCB::createThread(&getcThread, KernelConsole::consoleget, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0);
     thread_create(&mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, Scheduler::idle, nullptr);
 
     TCB::running = mainThread;
 
     putcThread->setPrivilege(1);
+    getcThread->setPrivilege(1);
     mainThread->setPrivilege(1);
 
     kmem_cache_t* handle = kmem_cache_create("TCB Cache", sizeof(TCB), nullptr, nullptr);
@@ -53,15 +55,13 @@ int main() {
         kmem_cache_alloc(handle);
     TCB* thread_two = (TCB*) kmem_cache_alloc(handle);
 
-    kmem_cache_info(handle);
+    //kmem_cache_info(handle);
 
     kmem_cache_free(handle, thread_one);
     kmem_cache_free(handle, thread_two);
 
     kmem_cache_destroy(handle);
 
-    char* buff = (char*) kmalloc(MIN_BUFF_SIZE);
-    kfree(buff);
 
     // TODO - Odraditi dealokaciju svih rucki kesa i vratiti sve Badiju
 
@@ -70,6 +70,7 @@ int main() {
 
     thread_create(&usermainThread, user_wrapper, wrap);
     usermainThread->setPid(1);
+    usermainThread->setPrivilege(1);
 
     while(!usermainThread->isFinished()){
         thread_dispatch();
@@ -82,6 +83,7 @@ int main() {
     Riscv::mc_sstatus(SSTATUS_SIE);
 
     putcThread->setFinished(true);
+    getcThread->setFinished(true);
     Scheduler::idleThread->setFinished(true);
 
     asm volatile ("csrw satp, zero");
@@ -91,7 +93,7 @@ int main() {
     /*delete putcThread;
     delete Scheduler::idleThread;
     delete usermainThread;*/
-    delete console;
+    //delete console;
     mainThread->setFinished(true);
     //delete mainThread; // TODO - srediti dealokaciju!!!
 

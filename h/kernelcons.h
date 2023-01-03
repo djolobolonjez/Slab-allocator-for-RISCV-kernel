@@ -15,10 +15,9 @@ private:
 
     KernelSem* fullBuff1, *emptyBuff1;
     KernelSem* fullBuff2, *emptyBuff2;
+    KernelSem* readSem, *writeSem;
 
     int head1 = 0, head2 = 0, tail1 = 0, tail2 = 0;
-
-    int size = 0;
 
 public:
     ~KernelConsole();
@@ -31,7 +30,8 @@ public:
 
     void flush() const;
 
-    static void consoleput(void* arg);   // kernel function for sending the character to the console
+    static void consoleput(void* arg); // kernel function for sending the character to the console
+    static void consoleget(void* arg);
 
     static KernelConsole* getInstance();// get the single instance
 

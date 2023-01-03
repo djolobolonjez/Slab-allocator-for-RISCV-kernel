@@ -95,13 +95,16 @@ int MemoryAllocator::kmem_free(void* addr){
     if(newBlock->next) newBlock->next->prev = newBlock;
     if(curr) curr->next = newBlock;
     else MemoryAllocator::fmem_head = newBlock;
-    tryToUnmap(newBlock);
+    //tryToUnmap(newBlock);
 
-    if (tryToJoin(newBlock) > 0)
-        tryToUnmap(newBlock);
+    tryToJoin(newBlock);
+    tryToJoin(curr);
 
-    if (tryToJoin(curr) > 0)
-        tryToUnmap(curr);
+   /* if (tryToJoin(newBlock) > 0)
+        tryToUnmap(newBlock);*/
+
+    /*if (tryToJoin(curr) > 0)
+        tryToUnmap(curr);*/
 
     return 0;
 

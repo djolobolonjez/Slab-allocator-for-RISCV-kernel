@@ -23,6 +23,8 @@ void Riscv::sppKernel(void (*fn)(void*), void* arg) {
     uint64 ra;
     asm volatile ("mv %[ra], ra" : [ra] "=r"(ra));
 
+    Riscv::ms_sstatus(SSTATUS_SPP);
+
     asm volatile("csrw sepc, %[function]" : : [function] "r"(fn));
     asm volatile ("mv a0, %[arg]" : : [arg] "r"(arg));
 
@@ -245,21 +247,12 @@ void Riscv::trapHandler()  {
 
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ){
-            
-            if(READ_READY){
-                char c = C_READ;
-                KernelConsole* cons  = KernelConsole::getInstance();
-                if(cons->size < MAX_SIZE){
-                    cons->size++;
-                    cons->input_buff[cons->tail2] = c;
-                    cons->tail2 = (cons->tail2 + 1) % MAX_SIZE;
-                    cons->emptyBuff2->signal();
-                }
-            }
+            KernelConsole* cons  = KernelConsole::getInstance();
+            cons->readSem->signal();
+            cons->writeSem->signal();
         }
-        else{
-            plic_complete(irq);
-        }
+
+        plic_complete(irq);
 
         w_sstatus(sstatus);
         w_sepc(sepc);

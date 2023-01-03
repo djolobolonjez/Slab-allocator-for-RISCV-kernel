@@ -25,7 +25,7 @@ extern const void* USER_CODE_END;
 #define GETC 0x41
 #define PUTC 0x42
 
-#define MAX_SIZE 1024
+#define MAX_SIZE 4096
 #define BLOCK_SIZE (4096)
 #define MAX_BUCKET 12
 
