@@ -34,6 +34,9 @@ sem_signal(sem_t id);
 int 
 tcb_create(thread_t* handle, void(*fun)(void*), void* arg);
 
+int
+thread_start(thread_t* handle);
+
 int 
 time_sleep(time_t);
 

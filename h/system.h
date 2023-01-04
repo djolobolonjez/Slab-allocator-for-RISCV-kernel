@@ -14,6 +14,7 @@ extern const void* USER_CODE_END;
 #define THREAD_EXIT 0x12
 #define THREAD_DISPATCH 0x13
 #define TCB_CREATE 0x14
+#define THREAD_START 0x15
 
 #define SEM_OPEN 0x21
 #define SEM_CLOSE 0x22

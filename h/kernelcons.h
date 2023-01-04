@@ -13,22 +13,22 @@ private:
     char* input_buff;
     char* output_buff;
 
-    KernelSem* txBuff, *txFull;
-    KernelSem* rxEmpty, *rxBuff;
-    KernelSem* uartReceive, *uartTransmit;
+    KernelSem* fullBuff1, *emptyBuff1;
+    KernelSem* fullBuff2, *emptyBuff2;
+    KernelSem* readSem, *writeSem;
 
-    int outpHead = 0, inpHead = 0, outpTail = 0, inpTail = 0;
+    int head1 = 0, head2 = 0, tail1 = 0, tail2 = 0;
 
 public:
     ~KernelConsole();
 
-    int outputHead() const { return outpHead; }
-    int outputTail() const { return outpTail; }
+    int inputHead() const { return head1; }
+    int inputTail() const { return tail1; }
 
     void put(char);  // put the character into output buffer
     char get();  // take the character from the input buffer
 
-    void flush() const; // flush the output buffer
+    void flush() const;
 
     static void consoleput(void* arg); // kernel function for sending the character to the console
     static void consoleget(void* arg);

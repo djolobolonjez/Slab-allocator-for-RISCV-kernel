@@ -6,7 +6,6 @@
 
 Cache* TCB::cacheTCB = nullptr;
 TCB* TCB::running;
-int TCB::call = 0;
 
 uint64 TCB::timeSliceCounter = 0;
 
@@ -59,12 +58,7 @@ void TCB::dispatch() {
     TCB::contextSwitch(&old->context, &TCB::running->context);
 }
 
-TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *arg, void *stack_space, int id) {
-
-    if(TCB::call == 1 && *handle != nullptr) {
-        Scheduler::put(*handle);
-        return *handle;
-    }
+TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *arg, void *stack_space, int id, bool start) {
 
     TCB* thread = (TCB*) kmem_cache_alloc(cacheTCB);
     thread->stack = (start_routine != nullptr ? (uint64*)stack_space : nullptr);
@@ -75,7 +69,10 @@ TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *ar
                        (start_routine != nullptr ? (uint64)&thread->stack[DEFAULT_STACK_SIZE/sizeof(uint64)] : 0)};
 
     *handle = thread;
-    if(start_routine != nullptr && TCB::call == 0) Scheduler::put(thread);
+    if(start_routine != nullptr && start) {
+        Scheduler::put(thread);
+        thread->started = true;
+    }
 
     return thread;
 }
@@ -105,6 +102,7 @@ TCB::TCB() {
     this->blocked = false;
     this->close = 0;
     this->deleted = false;
+    this->started = false;
     this->finished = false;
     this->holder = nullptr;
     this->privilege = 0;
@@ -113,4 +111,14 @@ TCB::TCB() {
     this->stack = nullptr;
     this->fun = nullptr;
     this->funArg = nullptr;
+}
+
+int TCB::startThread(thread_t *handle) {
+    if ((*handle)->isStarted())
+        return -1;
+
+    Scheduler::put(*handle);
+    (*handle)->started = true;
+
+    return 1;
 }

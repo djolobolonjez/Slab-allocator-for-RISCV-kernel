@@ -53,8 +53,7 @@ Thread::Thread() : myHandle(nullptr) {
 
 
 int Thread::start() {
-    if(thread_create(&myHandle, nullptr, nullptr) < 0) return -1;
-    return 0;
+    return thread_start(&myHandle);
 }
 
 void Thread::dispatch() {

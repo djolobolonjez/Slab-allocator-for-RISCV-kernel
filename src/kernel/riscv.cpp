@@ -141,7 +141,7 @@ void Riscv::trapHandler()  {
             ABI_REG_THREE(handle, start_routine, arg);
             LOAD_STACK(stck);
 
-            TCB::createThread(handle, start_routine, arg, stck, 0);
+            TCB::createThread(handle, start_routine, arg, stck, 0, true);
             W_RET
         }
         else if(number == THREAD_EXIT){
@@ -157,7 +157,6 @@ void Riscv::trapHandler()  {
             w_sepc(sepc);
         }
         else if(number == TCB_CREATE){
-            TCB::call = 1;
             thread_t* handle;
             void (*start_routine)(void*);
             void* arg;
@@ -166,7 +165,14 @@ void Riscv::trapHandler()  {
             ABI_REG_THREE(handle, start_routine, arg);
             LOAD_STACK(stck);
 
-            TCB::createThread(handle, start_routine, arg, stck, 1);
+            TCB::createThread(handle, start_routine, arg, stck, 1, false);
+            W_RET
+        }
+        else if (number == THREAD_START) {
+            thread_t* handle;
+
+            asm volatile ("mv %[handle], a1" : [handle] "=r"(handle));
+            TCB::startThread(handle);
             W_RET
         }
         else if(number == SEM_OPEN){
@@ -248,8 +254,8 @@ void Riscv::trapHandler()  {
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ){
             KernelConsole* cons  = KernelConsole::getInstance();
-            cons->uartReceive->signal();
-            cons->uartTransmit->signal();
+            cons->readSem->signal();
+            cons->writeSem->signal();
         }
 
         plic_complete(irq);

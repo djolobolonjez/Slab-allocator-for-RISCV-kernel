@@ -64,6 +64,21 @@ thread_create(thread_t* handle, void(*start_routine)(void*), void* arg)
     return ret;
 }
 
+int
+thread_start(thread_t* handle)
+{
+    uint64 num = THREAD_START;
+    int ret = 1;
+
+    SYSCALL_REG_TWO(num, handle);
+
+    ECALL
+
+    asm volatile ("mv %[ret], a0" : [ret] "=r"(ret));
+
+    return ret;
+}
+
 void 
 thread_dispatch()
 {

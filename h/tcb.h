@@ -24,7 +24,10 @@ public:
     };
 
 
-    static TCB* createThread(thread_t* handle, void(*start_routine)(void*), void* arg, void* stack_space, int id);  // creates the Thread Control Block for given thread handle
+    static TCB* createThread(thread_t* handle, void(*start_routine)(void*), void* arg, void* stack_space, int id, bool start);  // creates the Thread Control Block for given thread handle
+    static int startThread(thread_t* handle);
+
+    bool isStarted() const { return started; }
 
     void setHolder(KernelSem* sem) { holder = sem; }
     void setClose(int c) { close = c; }
@@ -57,8 +60,6 @@ public:
     static TCB* running;
     static Cache* cacheTCB;
 
-    static int call;
-
     void* operator new(size_t size);
     void* operator new[](size_t size);
 
@@ -75,6 +76,7 @@ private:
 
     bool finished;
     bool blocked;
+    bool started;
     bool asleep;
     int privilege;
 

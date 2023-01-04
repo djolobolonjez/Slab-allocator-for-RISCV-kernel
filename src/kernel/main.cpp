@@ -36,9 +36,9 @@ int main() {
     KernelConsole* console = KernelConsole::getInstance();
     TCB* usermainThread = nullptr, *putcThread = nullptr, *mainThread = nullptr, *getcThread = nullptr;
 
-    TCB::createThread(&putcThread, KernelConsole::consoleput, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0);
+    TCB::createThread(&putcThread, KernelConsole::consoleput, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0, true);
+    TCB::createThread(&getcThread, KernelConsole::consoleget, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0, true);
 
-    TCB::createThread(&getcThread, KernelConsole::consoleget, nullptr, kmalloc(DEFAULT_STACK_SIZE), 0);
     thread_create(&mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, Scheduler::idle, nullptr);
 

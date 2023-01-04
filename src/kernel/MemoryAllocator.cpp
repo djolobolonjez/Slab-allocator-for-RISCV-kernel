@@ -97,6 +97,9 @@ int MemoryAllocator::kmem_free(void* addr){
     else MemoryAllocator::fmem_head = newBlock;
     tryToUnmap(newBlock);
 
+    /*tryToJoin(newBlock);
+    tryToJoin(curr);*/
+
     if (tryToJoin(newBlock) > 0)
         tryToUnmap(newBlock);
 
