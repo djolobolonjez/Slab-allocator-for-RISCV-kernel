@@ -254,8 +254,8 @@ void Riscv::trapHandler()  {
         int irq = plic_claim();
         if(irq == CONSOLE_IRQ){
             KernelConsole* cons  = KernelConsole::getInstance();
-            cons->readSem->signal();
-            cons->writeSem->signal();
+            cons->uartReceive->signal();
+            cons->uartTransmit->signal();
         }
 
         plic_complete(irq);
