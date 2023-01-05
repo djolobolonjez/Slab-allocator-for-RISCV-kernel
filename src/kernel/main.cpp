@@ -53,7 +53,7 @@ int main() {
     thread_create(&usermainThread, user_wrapper, wrap);
     usermainThread->setPid(1);
 
-    usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
+    //usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
 
     while(!usermainThread->isFinished()){
         thread_dispatch();

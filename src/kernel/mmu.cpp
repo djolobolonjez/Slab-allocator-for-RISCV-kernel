@@ -16,7 +16,6 @@ void MMU::MMUInit() {
     pmap(0x10000000, 0x10000100, ReadWrite); // map UART
     pmap(0x0c000000, 0x0c002001, ReadWrite);  // map PLIC
     pmap(0x0c200000, 0x0c208001, ReadWrite);
-    pmap((uint64)HEAP_START_ADDR, (uint64)HEAP_END_ADDR, UserReadWriteExecute);
 }
 
 void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
