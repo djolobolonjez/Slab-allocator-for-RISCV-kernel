@@ -49,7 +49,7 @@ void TCB::dispatch() {
 
     TCB* old = running;
 
-    if(!old->isFinished() && !old->isBlocked() && !old->isAsleep()){
+    if(!old->isFinished() && !old->isBlocked() && !old->isAsleep() && !old->isIdle()){
         Scheduler::put(old);
     }
 
@@ -102,6 +102,7 @@ TCB::TCB() {
     this->blocked = false;
     this->close = 0;
     this->deleted = false;
+    this->idle = false;
     this->started = false;
     this->finished = false;
     this->holder = nullptr;
@@ -114,11 +115,14 @@ TCB::TCB() {
 }
 
 int TCB::startThread(thread_t *handle) {
-    if ((*handle)->isStarted())
+    if (*handle == nullptr)
         return -1;
+
+    if ((*handle)->isStarted())
+        return -2;
 
     Scheduler::put(*handle);
     (*handle)->started = true;
 
-    return 1;
+    return 0;
 }

@@ -32,10 +32,10 @@ public:
 //#include "../test/ConsumerProducer_CPP_Sync_API_test.hpp" // zadatak 3., kompletan CPP API sa semaforima, sinhrona promena konteksta
 
 //#include "../test/ThreadSleep_C_API_test.hpp" // thread_sleep test C API
-#include "../../test/ConsumerProducer_CPP_API_test.hpp" // zadatak 4. CPP API i asinhrona promena konteksta
+//#include "../../test/ConsumerProducer_CPP_API_test.hpp" // zadatak 4. CPP API i asinhrona promena konteksta
 
 
-void userMain() {
+//void userMain() {
 //    Threads_C_API_test(); // zadatak 2., niti C API i sinhrona promena konteksta
 //    Threads_CPP_API_test(); // zadatak 2., niti CPP API i sinhrona promena konteksta
 
@@ -43,11 +43,9 @@ void userMain() {
 //    producerConsumer_CPP_Sync_API(); // zadatak 3., kompletan CPP API sa semaforima, sinhrona promena konteksta
 
 //    testSleeping(); // thread_sleep test C API
-    ConsumerProducerCPP::testConsumerProducer(); // zadatak 4. CPP API i asinhrona promena konteksta, kompletan test svega
+    //ConsumerProducerCPP::testConsumerProducer(); // zadatak 4. CPP API i asinhrona promena konteksta, kompletan test svega
 
-
-}
-/*
+//}
 #include "../../h/slab.h"
 #include "../../h/printing.hpp"
 
@@ -80,9 +78,6 @@ void construct(void *data) {
     static int i = 1;
     printInt(i++);
     printString(" Shared object constructed.\n");
-    */
-/*char c = getc();
-    putc(c);*//*
 
     memset(data, shared_size, MASK);
 }
@@ -160,6 +155,84 @@ void userMain() {
     runs(work, &data, RUN_NUM);
 
     kmem_cache_destroy(shared);
+}
+/*
+
+#include "../../h/syscall_c.h"
+#include "../../h/syscall_cpp.hpp"
+#include "../../h/printing.hpp"
+
+
+struct thread_data {
+    int id;
+};
+
+class ForkThread : public Thread {
+public:
+    ForkThread(long _id) noexcept : Thread(), id(_id), finished(false) {}
+    virtual void run() {
+        printString("Started thread id: ");
+        printInt(id);
+        printString("\n");
+
+        ForkThread* thread = new ForkThread(id + 1);
+        ForkThread** threads = (ForkThread** ) mem_alloc(sizeof(ForkThread*) * id);
+
+        if (threads != nullptr) {
+            for (long i = 0; i < id; i++) {
+                threads[i] = new ForkThread(id);
+            }
+
+            if (thread != nullptr) {
+                if (thread->start() == 0) {
+
+                    for (int i = 0; i < 50; i++) {
+                        for (int j = 0; j < 50; j++) {
+
+                        }
+                        thread_dispatch();
+                    }
+
+                    while (!thread->isFinished()) {
+                        thread_dispatch();
+                    }
+                }
+                delete thread;
+            }
+
+            for (long i = 0; i < id; i++) {
+                delete threads[i];
+            }
+
+            mem_free(threads);
+        }
+
+        printString("Finished thread id: ");
+        printInt(id);
+        printString("\n");
+
+        finished = true;
+    }
+
+    bool isFinished() const {
+        return finished;
+    }
+
+private:
+    long id;
+    bool finished;
+};
+
+
+void userMain() {
+    ForkThread thread(1);
+
+    thread.start();
+
+    while (!thread.isFinished()) {
+        thread_dispatch();
+    }
+    printString("User main finished\n");
 }
 */
 

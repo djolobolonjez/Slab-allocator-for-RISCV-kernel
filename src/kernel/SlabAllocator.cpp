@@ -149,7 +149,7 @@ void Slab::updateSlab(Slab *slabHeader) {
             slabHeader->owner->moveSlab(slabHeader, Cache::PARTIAL);
     }
     else {
-        if (slabHeader->numOfFreeSlots == slabHeader->numOfSlots - 1)
+        if (slabHeader->numOfFreeSlots == (slabHeader->numOfSlots - 1))
             slabHeader->owner->moveSlab(slabHeader, Cache::FREE);
     }
 

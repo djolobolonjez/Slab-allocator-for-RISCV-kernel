@@ -16,12 +16,14 @@ void MMU::MMUInit() {
     pmap(0x10000000, 0x10000100, ReadWrite); // map UART
     pmap(0x0c000000, 0x0c002001, ReadWrite);  // map PLIC
     pmap(0x0c200000, 0x0c208001, ReadWrite);
+    pmap((uint64)HEAP_START_ADDR, (uint64)HEAP_END_ADDR, UserReadWriteExecute);
 }
 
 void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
     start &= ~(PAGE_SIZE - 1);
     end &= ~(PAGE_SIZE - 1);
 
+    size_t descNum = PAGE_SIZE / sizeof(uint64);
     size_t pageNum = (end - start) / PAGE_SIZE;
 
     uint64* levelTwo, *levelThree;
@@ -33,13 +35,13 @@ void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
         uint64 vpn[] = {(vaddr >> 12) & 0x1ffUL, (vaddr >> 21) & 0x1ffUL, (vaddr >> 30) & 0x1ffUL};
         if (!(rootTablePointer[vpn[2]] & Valid)) {
             levelTwo = (uint64*) Buddy::alloc(0);
-            zeroInit(levelTwo, PAGE_SIZE / sizeof(uint64));
+            zeroInit(levelTwo, descNum);
 
             uint64 levelTwoEntry = ((uint64)levelTwo >> 2) | Valid;
             rootTablePointer[vpn[2]] = levelTwoEntry;
 
             levelThree = (uint64*) Buddy::alloc(0);
-            zeroInit(levelThree, PAGE_SIZE / sizeof(uint64));
+            zeroInit(levelThree, descNum);
 
             levelTwo[vpn[1]] = ((uint64) levelThree >> 2) | Valid;
         }
@@ -47,7 +49,7 @@ void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
             levelTwo = (uint64*) ((rootTablePointer[vpn[2]] >> 10) << 12);
             if (!(levelTwo[vpn[1]] & Valid)) {
                 levelThree = (uint64*) Buddy::alloc(0);
-                zeroInit(levelThree, PAGE_SIZE / sizeof(uint64));
+                zeroInit(levelThree, descNum);
 
                 levelTwo[vpn[1]] = ((uint64) levelThree >> 2) | Valid;
             }
@@ -113,5 +115,28 @@ void MMU::punmap(uint64 start, uint64 end) {
         invalid(start, PAGE_UNMAP);
         start += PAGE_SIZE;
     }
+}
+
+void MMU::MMUFinalize() {
+    uint64* pmtp = rootTablePointer;
+    uint64 descNum = PAGE_SIZE / sizeof(uint64);
+    uint64 i;
+
+    for (i = 0; i < descNum; i++) {
+        if (pmtp[i] & Valid) {
+            uint64* levelTwo = (uint64*)((pmtp[i] >> 10) << 12);
+            uint64 ii;
+
+            for (ii = 0; ii < descNum; ii++) {
+                if (levelTwo[ii] & Valid) {
+                    uint64* levelThree = (uint64*) ((levelTwo[ii] >> 10) << 12);
+                    Buddy::free(levelThree, 0);
+                }
+            }
+            Buddy::free(levelTwo, 0);
+        }
+    }
+
+    Buddy::free(pmtp, 0);
 }
 

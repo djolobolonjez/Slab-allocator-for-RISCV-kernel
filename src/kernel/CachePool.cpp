@@ -1,6 +1,7 @@
 #include "../../h/CachePool.h"
 #include "../../h/buddy.h"
 #include "../../h/SlabAllocator.h"
+#include "../../h/slab.h"
 
 Cache* CachePool::memoryBuffers[BUFFER_NUM] = {nullptr};
 Cache* CachePool::memBuffSlabs[BUFFER_NUM] = {nullptr};
@@ -120,7 +121,7 @@ void CachePool::SlabInit() {
         size_t numObjects = (BLOCK_SIZE < objSize ? 1 : BLOCK_SIZE / objSize);
         size_t size = sizeof(Slab) + numObjects * sizeof(unsigned);
 
-        memBuffSlabs[i] = new Cache("Slab cache", size, nullptr, nullptr);
+        memBuffSlabs[i] = kmem_cache_create("Slab cache", size, nullptr, nullptr);
     }
 }
 
@@ -141,11 +142,11 @@ void* CachePool::allocateBuffer(size_t size) {
     int index = getPowerOfTwo(size);
 
     if (!memoryBuffers[index]) {
-        memoryBuffers[index] = new Cache("size-", 1 << (MIN_BUFF_ORDER + index), nullptr, nullptr);
+        memoryBuffers[index] = kmem_cache_create("size-", 1 << (MIN_BUFF_ORDER + index), nullptr, nullptr);
         bufferInit(index, size);
     }
 
-    return memoryBuffers[index]->cacheAlloc(); // TODO - ne treba da poziva cacheAlloc nego drugu metodu koja drugacije alocira Slab-ove
+    return memoryBuffers[index]->cacheAlloc();
 }
 
 void CachePool::deallocateBuffer(const void *objp) {
@@ -181,4 +182,20 @@ void CachePool::bufferInit(int index, size_t size) {
     size_t order = getOrder(size);
     memoryBuffers[index]->slabOrder = order;
     memoryBuffers[index]->slabSize = (1 << order) * BLOCK_SIZE;
+}
+
+void CachePool::SlabFinalize() {
+    for (auto & memoryBuffer : memoryBuffers)
+        kmem_cache_destroy(memoryBuffer);
+    for (auto & memBuffSlab : memBuffSlabs)
+        kmem_cache_destroy(memBuffSlab);
+}
+
+void CachePool::CachePoolFinalize() {
+    CacheRecord* curr = CachePool::head;
+    while (curr) {
+        CacheRecord* old = curr;
+        curr = curr->next;
+        Buddy::free(old, 0);
+    }
 }

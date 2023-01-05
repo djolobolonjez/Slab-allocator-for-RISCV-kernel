@@ -266,18 +266,18 @@ void Riscv::trapHandler()  {
 
     else if(cause == 12) {
         uint64 vaddr = Riscv::r_stval();
-        uint64 status = Riscv::r_sstatus();
+        volatile uint64 sstatus = r_sstatus();
 
         MMU::invalid(vaddr, MMU::PAGE_FAULT);
 
-        if (status & SSTATUS_SPP)
+        if (sstatus & SSTATUS_SPP)
             MMU::pmap(vaddr, vaddr, MMU::ReadWriteExecute);
         else
             MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
     }
     else if (cause == 13 || cause == 15) {
         uint64 vaddr = Riscv::r_stval();
-        uint64 status = Riscv::r_sstatus();
+        volatile uint64 status = Riscv::r_sstatus();
 
         MMU::invalid(vaddr, MMU::PAGE_FAULT);
 
@@ -289,6 +289,8 @@ void Riscv::trapHandler()  {
         }
     }
     else {
+        printString("scause: ");
         printInt(cause);
+        printString("\n");
     }
 }

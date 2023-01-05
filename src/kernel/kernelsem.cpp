@@ -122,3 +122,7 @@ void* KernelSem::operator new[](size_t size) { return kmem_cache_alloc(cacheSem)
 
 void KernelSem::operator delete(void *addr) { kmem_cache_free(cacheSem, addr); }
 void KernelSem::operator delete[](void *addr)  { kmem_cache_free(cacheSem, addr); }
+
+void KernelSem::semDestroy() {
+    kmem_cache_destroy(KernelSem::cacheBlocked);
+}

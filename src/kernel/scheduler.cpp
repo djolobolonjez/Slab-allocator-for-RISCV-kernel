@@ -27,13 +27,14 @@ void Scheduler::put(TCB* tcb){
         tail->next = tcb;
         tcb->prev = tail;
         tail = tail->next;
+        tcb->next = nullptr;
     }else
     {
         head = tail = tcb;
+        head->next = tail->next = nullptr;
+        head->prev = tail->prev = nullptr;
     }
 
 }
 
-void Scheduler::idle(void*) {
-    while(1) { thread_dispatch(); }
-};
+

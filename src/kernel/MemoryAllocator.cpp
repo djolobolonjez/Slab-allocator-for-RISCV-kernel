@@ -95,10 +95,8 @@ int MemoryAllocator::kmem_free(void* addr){
     if(newBlock->next) newBlock->next->prev = newBlock;
     if(curr) curr->next = newBlock;
     else MemoryAllocator::fmem_head = newBlock;
-    tryToUnmap(newBlock);
 
-    /*tryToJoin(newBlock);
-    tryToJoin(curr);*/
+    tryToUnmap(newBlock);
 
     if (tryToJoin(newBlock) > 0)
         tryToUnmap(newBlock);
@@ -107,7 +105,6 @@ int MemoryAllocator::kmem_free(void* addr){
         tryToUnmap(curr);
 
     return 0;
-
 }
 
 void MemoryAllocator::tryToUnmap(BlockHeader *addr) {

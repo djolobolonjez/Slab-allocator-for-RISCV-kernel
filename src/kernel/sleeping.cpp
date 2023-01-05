@@ -83,3 +83,7 @@ void Sleeping::add(time_t time) {
     }
 }
 
+void Sleeping::sleepDestroy() {
+    kmem_cache_destroy(Sleeping::cacheSleep);
+}
+
