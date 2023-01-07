@@ -3,6 +3,9 @@
 
 #include "syscall_c.h"
 
+#define LOCK() while(copy_and_swap(lockPrint, 0, 1))
+#define UNLOCK() while(copy_and_swap(lockPrint, 1, 0))
+
 typedef unsigned long uint64;
 
 extern "C" uint64 copy_and_swap(uint64 &lock, uint64 expected, uint64 desired);

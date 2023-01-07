@@ -4,7 +4,7 @@
 #include "../../h/kernelsem.h"
 #include "../../h/sleeping.h"
 #include "../../h/kernelcons.h"
-#include "../../h/printing.hpp"
+#include "../../h/kprint.h"
 #include "../../h/mmu.h"
 
 void Riscv::sppUser(void (*fn)(void*), void* arg) {
@@ -41,7 +41,6 @@ uint64 Riscv::r_sstatus() {
 void Riscv::w_sstatus(uint64 sstatus) {
 
     asm volatile("csrw sstatus, %[sstatus]" : : [sstatus] "r"(sstatus));
-
 }
 
 uint64 Riscv::r_scause() {
@@ -175,6 +174,11 @@ void Riscv::trapHandler()  {
             TCB::startThread(handle);
             W_RET
         }
+        else if (number == THREAD_DESTROY) {
+            thread_t handle;
+            asm volatile ("mv %[handle], a1" : [handle] "=r"(handle));
+            delete handle;
+        }
         else if(number == SEM_OPEN){
             sem_t* handle;
             unsigned init;
@@ -266,7 +270,7 @@ void Riscv::trapHandler()  {
 
     else if(cause == 12) {
         uint64 vaddr = Riscv::r_stval();
-        volatile uint64 sstatus = r_sstatus();
+        uint64 sstatus = r_sstatus();
 
         MMU::invalid(vaddr, MMU::PAGE_FAULT);
 
@@ -277,20 +281,17 @@ void Riscv::trapHandler()  {
     }
     else if (cause == 13 || cause == 15) {
         uint64 vaddr = Riscv::r_stval();
-        volatile uint64 status = Riscv::r_sstatus();
+        uint64 status = Riscv::r_sstatus();
 
-        MMU::invalid(vaddr, MMU::PAGE_FAULT);
-
-        if (MMU::kspace(vaddr) && !(status & SSTATUS_SPP)) {
-            printString("Access violation!");
+        if (!(status & SSTATUS_SPP) && MMU::kspace(vaddr)) {
+            kprintString("Access violation!");
         }
         else {
+            MMU::invalid(vaddr, MMU::PAGE_FAULT);
             MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
         }
     }
     else {
-        printString("scause: ");
-        printInt(cause);
-        printString("\n");
+        kprintInt(cause);
     }
 }

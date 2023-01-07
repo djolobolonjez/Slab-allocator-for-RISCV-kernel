@@ -7,6 +7,9 @@
 Cache* TCB::cacheTCB = nullptr;
 TCB* TCB::running;
 
+TCB* TCB::mainThread = nullptr;
+TCB* TCB::usermainThread = nullptr;
+
 uint64 TCB::timeSliceCounter = 0;
 
 TCB::~TCB() {
@@ -20,10 +23,10 @@ TCB::~TCB() {
     }*/
     // TODO - dodati dtor za TCB i za KernelSem!!
 
-    if (getPrivilege() == 0) delete[] stack;
+   /*if (getPrivilege() == 0) delete[] stack;
     else kfree(stack);
 
-    if(pid == 1 && funArg != nullptr) mem_free(funArg);
+    if(pid == 1 && funArg != nullptr) mem_free(funArg);*/
 
 }
 
@@ -49,7 +52,7 @@ void TCB::dispatch() {
 
     TCB* old = running;
 
-    if(!old->isFinished() && !old->isBlocked() && !old->isAsleep() && !old->isIdle()){
+    if(!old->isFinished() && !old->isBlocked() && !old->isAsleep()){
         Scheduler::put(old);
     }
 
@@ -102,7 +105,6 @@ TCB::TCB() {
     this->blocked = false;
     this->close = 0;
     this->deleted = false;
-    this->idle = false;
     this->started = false;
     this->finished = false;
     this->holder = nullptr;

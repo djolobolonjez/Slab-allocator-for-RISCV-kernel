@@ -1,8 +1,11 @@
 #include "../../h/mmu.h"
 #include "../../h/buddy.h"
 #include "../../h/system.h"
+#include "../../h/kprint.h"
 
 uint64* MMU::rootTablePointer = nullptr;
+uint64* MMU::kspbegin = nullptr;
+uint64* MMU::kspend = nullptr;
 
 void MMU::MMUInit() {
     rootTablePointer = (uint64*) Buddy::alloc(0);
@@ -10,9 +13,25 @@ void MMU::MMUInit() {
 
     uint64* user_code_start = (uint64*)&USER_CODE_START;
     uint64* user_code_end = (uint64*)&USER_CODE_END;
+    
+    uint64* udata_begin = (uint64*)&UDATA_BEGIN;
+    uint64* udata_end = (uint64*)&UDATA_END;
+    
+    uint64* kcode_begin = (uint64*)&KCODE_BEGIN;
+    uint64* kcode_end = (uint64*)&KCODE_END;
+     
+    kspbegin = (uint64*)&KDATA_BEGIN;
+    kspend = (uint64*)&KDATA_END;
 
     pmap((uint64)user_code_start, (uint64)user_code_end, UserReadWriteExecute); // map user code section
-    pmap(0x80000000, (uint64)Buddy::KERNEL_END_ADDR, ReadWriteExecute); // map kernel space
+    pmap((uint64)udata_begin, (uint64)udata_end, UserReadWriteExecute); // map user data section
+    
+    // map kernel space
+    pmap((uint64)Buddy::KERNEL_START_ADDR, (uint64)Buddy::KERNEL_END_ADDR, ReadWriteExecute); 
+    pmap((uint64)kcode_begin, (uint64)kcode_end, ReadWriteExecute);
+    pmap((uint64)kspbegin, (uint64)kspend, ReadWriteExecute);
+    
+    // map devices
     pmap(0x10000000, 0x10000100, ReadWrite); // map UART
     pmap(0x0c000000, 0x0c002001, ReadWrite);  // map PLIC
     pmap(0x0c200000, 0x0c208001, ReadWrite);
@@ -55,8 +74,8 @@ void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
             else
                 levelThree = (uint64*) ((levelTwo[vpn[1]] >> 10) << 12);
         }
-        if (!(levelThree[vpn[0]] & Valid))
-            levelThree[vpn[0]] = pgDesc;
+
+        levelThree[vpn[0]] = pgDesc;
     }
 }
 
@@ -100,7 +119,9 @@ void MMU::zeroInit(uint64 *addr, size_t n) {
 }
 
 bool MMU::kspace(uint64 vaddr) {
-    if ((uint64*)vaddr >= Buddy::KERNEL_START_ADDR && (uint64*)vaddr < Buddy::KERNEL_END_ADDR)
+    uint64* va = (uint64*)vaddr;
+    if ((va >= Buddy::KERNEL_START_ADDR && va < Buddy::KERNEL_END_ADDR)
+    	|| (va >= kspbegin && va < kspend))
         return true;
     return false;
 }
@@ -138,4 +159,32 @@ void MMU::MMUFinalize() {
 
     Buddy::free(pmtp, 0);
 }
+
+void MMU::printPMT() {
+    uint64* pmtp = rootTablePointer;
+    uint64 descNum = PAGE_SIZE / sizeof(uint64);
+
+    for (size_t i = 0; i < descNum; i++) {
+        if (pmtp[i] & Valid) {
+            kprintString("Level One Table:\n");
+            kprintInt((uint64)PAGE_ALIGN(pmtp[i]), 16);
+            kprintString("\n");
+            uint64* levelTwo = PAGE_ALIGN(pmtp[i]);
+            for (size_t j = 0; j < descNum; j++) {
+                if (levelTwo[j] & Valid) {
+                    kprintString("Level Two Table:\n");
+                    kprintInt((uint64)PAGE_ALIGN(levelTwo[j]), 16);
+                    kprintString("\n");
+                    uint64* levelThree = PAGE_ALIGN(levelTwo[j]);
+                    for (size_t k = 0; k < descNum; k++){
+                        kprintString("Level Three Descriptor:\n");
+                        kprintInt((uint64)PAGE_ALIGN(levelThree[k]), 16);
+                        kprintString("\n");
+                    }
+                }
+            }
+        }
+    }
+}
+
 

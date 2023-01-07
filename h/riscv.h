@@ -20,7 +20,6 @@
 class Riscv{
 
 public:
-
     static void sppKernel(void (*fn)(void*), void* arg);
 
     static void sppUser(void (*fn)(void*), void* arg);

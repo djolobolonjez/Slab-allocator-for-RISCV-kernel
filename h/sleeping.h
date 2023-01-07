@@ -26,6 +26,7 @@ private:
 public:
     static Cache* cacheSleep;
 
+    static void sleepDestroy();
     static void remove(); // remove the thread from sleeping queue
     static void add(time_t);  // put the thread into sleeping queue
 };

@@ -252,3 +252,10 @@ getc()
 
     return c;
 }
+
+void thread_destroy(thread_t handle) {
+
+    uint64 num = THREAD_DESTROY;
+    SYSCALL_REG_TWO(num, handle);
+    ECALL
+}

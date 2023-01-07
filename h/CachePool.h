@@ -35,6 +35,9 @@ public:
 
     static void* allocateBuffer(size_t size);
     static void deallocateBuffer(const void* objp);
+    
+    static void CachePoolFinalize();
+    static void SlabFinalize();
 
     static Cache* getSlabCache(int index) { return memBuffSlabs[index]; }
     static Cache* getBufferCache(int index) { return memoryBuffers[index]; }

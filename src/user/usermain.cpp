@@ -46,7 +46,7 @@ public:
     //ConsumerProducerCPP::testConsumerProducer(); // zadatak 4. CPP API i asinhrona promena konteksta, kompletan test svega
 
 //}
-/*#include "../../h/slab.h"
+#include "../../h/slab.h"
 #include "../../h/printing.hpp"
 
 #define RUN_NUM (5)
@@ -155,10 +155,10 @@ void userMain() {
     runs(work, &data, RUN_NUM);
 
     kmem_cache_destroy(shared);
-}*/
+}
 
 
-#include "../../h/syscall_c.h"
+/*#include "../../h/syscall_c.h"
 #include "../../h/syscall_cpp.hpp"
 #include "../../h/printing.hpp"
 
@@ -186,8 +186,8 @@ public:
             if (thread != nullptr) {
                 if (thread->start() == 0) {
 
-                    for (int i = 0; i < 50; i++) {
-                        for (int j = 0; j < 50; j++) {
+                    for (int i = 0; i < 5000; i++) {
+                        for (int j = 0; j < 5000; j++) {
 
                         }
                         thread_dispatch();
@@ -199,7 +199,6 @@ public:
                 }
                 delete thread;
             }
-
             for (long i = 0; i < id; i++) {
                 delete threads[i];
             }
@@ -233,6 +232,6 @@ void userMain() {
         thread_dispatch();
     }
     printString("User main finished\n");
-}
+}*/
 
 

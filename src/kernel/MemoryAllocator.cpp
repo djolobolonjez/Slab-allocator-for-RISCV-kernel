@@ -1,6 +1,7 @@
 #include "../../h/MemoryAllocator.h"
 #include "../../h/mmu.h"
 #include "../../h/system.h"
+#include "../../h/kprint.h"
 
 MemoryAllocator::BlockHeader* MemoryAllocator::fmem_head = nullptr;
 int MemoryAllocator::init = 0;
@@ -78,6 +79,11 @@ int MemoryAllocator::kmem_free(void* addr){
 
     if(!addr) return -1;
 
+    /*uint64 a = (uint64)addr;
+    kprintString("Free: ");
+    kprintInt(a, 16);
+    kprintString("\n");*/
+
     BlockHeader* curr = nullptr;
 
     if(!MemoryAllocator::fmem_head || (uint8*)addr < (uint8*)MemoryAllocator::fmem_head)
@@ -96,13 +102,15 @@ int MemoryAllocator::kmem_free(void* addr){
     if(curr) curr->next = newBlock;
     else MemoryAllocator::fmem_head = newBlock;
 
-    tryToUnmap(newBlock);
+    tryToJoin(newBlock);
+    tryToJoin(curr);
+    /*tryToUnmap(newBlock);
 
     if (tryToJoin(newBlock) > 0)
         tryToUnmap(newBlock);
 
     if (tryToJoin(curr) > 0)
-        tryToUnmap(curr);
+        tryToUnmap(curr);*/
 
     return 0;
 }

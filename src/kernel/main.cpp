@@ -34,28 +34,29 @@ int main() {
     KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
 
     KernelConsole* console = KernelConsole::getInstance();
-    TCB* usermainThread = nullptr, *putcThread = nullptr, *mainThread = nullptr, *getcThread = nullptr;
+    TCB *putcThread = nullptr, *getcThread = nullptr;
 
     thread_create(&putcThread, KernelConsole::consoleput, nullptr);
     thread_create(&getcThread, KernelConsole::consoleget, nullptr);
-    thread_create(&mainThread, nullptr, nullptr);
+    thread_create(&TCB::mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, idle, nullptr);
 
-    TCB::running = mainThread;
+    TCB::running = TCB::mainThread;
 
     putcThread->setPrivilege(1);
     getcThread->setPrivilege(1);
-    mainThread->setPrivilege(1);
+    TCB::mainThread->setPrivilege(1);
 
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;
 
-    thread_create(&usermainThread, user_wrapper, wrap);
-    usermainThread->setPid(1);
+    thread_create(&TCB::usermainThread, user_wrapper, wrap);
+    TCB::usermainThread->setPid(1);
 
-    //usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
 
-    while(!usermainThread->isFinished()){
+    TCB::usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
+
+    while(!TCB::usermainThread->isFinished()){
         thread_dispatch();
     }
 
@@ -73,7 +74,7 @@ int main() {
 
     delete console;
 
-    mainThread->setFinished(true);
+    TCB::mainThread->setFinished(true);
 
     KernelSem::semDestroy();
     Sleeping::sleepDestroy();

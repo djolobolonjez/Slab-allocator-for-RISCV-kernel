@@ -6,6 +6,8 @@
 static const uint8 PAGE_ORDER = 12;
 static const uint64 PAGE_SIZE = 1 << 12;
 
+#define PAGE_ALIGN(VADDR) (uint64*) ((VADDR >> 10UL) << 12UL)
+
 class MMU {
 
 private:
@@ -34,6 +36,9 @@ private:
         UserReadExecute = Read | Execute | User,
         UserReadWriteExecute = Read | Write | Execute | User,
     };
+    
+    static uint64* kspbegin;
+    static uint64* kspend;
 
     static void pmap(uint64 start, uint64 end, EntryBits bits);
     static void punmap(uint64 start, uint64 end);
@@ -47,6 +52,9 @@ public:
     static uint64* rootTablePointer;
     static void MMUInit();
     static bool kspace(uint64 vaddr);
+    
+    static void MMUFinalize();
+    static void printPMT();
 };
 
 

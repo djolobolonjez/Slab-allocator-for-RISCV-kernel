@@ -37,6 +37,9 @@ tcb_create(thread_t* handle, void(*fun)(void*), void* arg);
 int
 thread_start(thread_t* handle);
 
+void
+thread_destroy(thread_t handle);
+
 int 
 time_sleep(time_t);
 

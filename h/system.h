@@ -7,6 +7,15 @@
 extern const void* USER_CODE_START;
 extern const void* USER_CODE_END;
 
+extern const void* UDATA_BEGIN;
+extern const void* UDATA_END;
+
+extern const void* KCODE_BEGIN;
+extern const void* KCODE_END;
+
+extern const void* KDATA_BEGIN;
+extern const void* KDATA_END;
+
 #define MEM_ALLOC 0x01
 #define MEM_FREE 0x02
 
@@ -15,6 +24,7 @@ extern const void* USER_CODE_END;
 #define THREAD_DISPATCH 0x13
 #define TCB_CREATE 0x14
 #define THREAD_START 0x15
+#define THREAD_DESTROY 0x16
 
 #define SEM_OPEN 0x21
 #define SEM_CLOSE 0x22
@@ -26,7 +36,7 @@ extern const void* USER_CODE_END;
 #define GETC 0x41
 #define PUTC 0x42
 
-#define MAX_SIZE 1024
+#define MAX_SIZE 4096
 #define BLOCK_SIZE (4096)
 #define MAX_BUCKET 12
 

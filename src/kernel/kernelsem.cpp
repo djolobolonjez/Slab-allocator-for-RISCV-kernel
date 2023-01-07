@@ -15,7 +15,7 @@ KernelSem::KernelSem() {
 }
 
 KernelSem::~KernelSem() {
-    BlockedQueue* curr = KernelSem::head, *prev = nullptr;
+    /*BlockedQueue* curr = KernelSem::head, *prev = nullptr;
     while(curr){
         prev = curr;
         curr = curr->next;
@@ -27,7 +27,7 @@ KernelSem::~KernelSem() {
         KernelSem::deleteNode(prev);
     }
 
-    head = tail = nullptr;
+    head = tail = nullptr;*/
 }
 
 KernelSem* KernelSem::createSem(sem_t* pSem, unsigned int init_value) {

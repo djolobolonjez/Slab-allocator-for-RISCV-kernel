@@ -1,6 +1,5 @@
 #include "../../h/syscall_cpp.hpp"
 #include "../../h/tcb.h"
-#include "../../h/kernelsem.h"
 
 void* operator new(size_t size){
 
@@ -65,7 +64,7 @@ int Thread::sleep(time_t time) {
     return time_sleep(time);
 }
 
-Thread::~Thread() { }
+Thread::~Thread() { thread_destroy(myHandle); }
 
 Semaphore::Semaphore(unsigned int init) {
     sem_open(&myHandle, init);

@@ -22,6 +22,7 @@ public:
     static KernelSem* createSem(sem_t* pSem, unsigned init_value); // creates a semaphore
 
     static int deleteSem(KernelSem*);  // deletes a semaphore
+    static void semDestroy();
 
     static Cache* cacheSem;
 
