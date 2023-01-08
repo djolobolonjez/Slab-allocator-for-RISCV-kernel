@@ -64,7 +64,7 @@ int Thread::sleep(time_t time) {
     return time_sleep(time);
 }
 
-Thread::~Thread() { thread_destroy(myHandle); }
+Thread::~Thread() { /*thread_destroy(myHandle); */}
 
 Semaphore::Semaphore(unsigned int init) {
     sem_open(&myHandle, init);

@@ -86,6 +86,7 @@ void TCB::wrapper() {
         Riscv::sppUser(TCB::running->fun, TCB::running->funArg);
     else
         Riscv::sppKernel(TCB::running->fun, TCB::running->funArg);
+    
     thread_exit();
 }
 

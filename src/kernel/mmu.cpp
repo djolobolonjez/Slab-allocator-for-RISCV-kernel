@@ -25,6 +25,7 @@ void MMU::MMUInit() {
 
     pmap((uint64)user_code_start, (uint64)user_code_end, UserReadWriteExecute); // map user code section
     pmap((uint64)udata_begin, (uint64)udata_end, UserReadWriteExecute); // map user data section
+    pmap((uint64)HEAP_START_ADDR, (uint64)HEAP_END_ADDR - 1, UserReadWriteExecute);
     
     // map kernel space
     pmap((uint64)Buddy::KERNEL_START_ADDR, (uint64)Buddy::KERNEL_END_ADDR, ReadWriteExecute); 
@@ -41,17 +42,25 @@ void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
     start &= ~(PAGE_SIZE - 1);
     end &= ~(PAGE_SIZE - 1);
 
-    size_t descNum = PAGE_SIZE / sizeof(uint64);
     size_t pageNum = (end - start) / PAGE_SIZE;
-
-    uint64* levelTwo, *levelThree;
 
     for (size_t i = 0; i <= pageNum; i++) {
         uint64 vaddr = start + i * PAGE_SIZE;
-        uint64 pgDesc = (vaddr >> 2) | Valid | bits;
+        map(vaddr, bits);   
+    }
+}
 
-        uint64 vpn[] = {(vaddr >> 12) & 0x1ffUL, (vaddr >> 21) & 0x1ffUL, (vaddr >> 30) & 0x1ffUL};
-        if (!(rootTablePointer[vpn[2]] & Valid)) {
+void MMU::map(uint64 vaddr, EntryBits bits) {
+
+    vaddr &= ~(PAGE_SIZE - 1);
+    uint64* levelTwo, *levelThree;
+    
+    uint64 vpn[] = {(vaddr >> 12) & 0x1ffUL, (vaddr >> 21) & 0x1ffUL, (vaddr >> 30) & 0x1ffUL};
+    
+    size_t descNum = PAGE_SIZE / sizeof(uint64);
+    uint64 pgDesc = (vaddr >> 2) | Valid | bits;
+    
+    if (!(rootTablePointer[vpn[2]] & Valid)) {
             levelTwo = (uint64*) Buddy::alloc(0);
             zeroInit(levelTwo, descNum);
 
@@ -75,8 +84,8 @@ void MMU::pmap(uint64 start, uint64 end, EntryBits bits) {
                 levelThree = (uint64*) ((levelTwo[vpn[1]] >> 10) << 12);
         }
 
-        levelThree[vpn[0]] = pgDesc;
-    }
+    levelThree[vpn[0]] = pgDesc;
+
 }
 
 void MMU::invalid(uint64 vaddr, MMU_FLAGS flags) {

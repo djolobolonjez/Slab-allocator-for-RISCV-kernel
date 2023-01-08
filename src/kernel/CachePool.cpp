@@ -168,7 +168,7 @@ size_t CachePool::getOrder(size_t x) {
 
     while (x > size) {
         order++;
-        size += BLOCK_SIZE;
+        size <<= 1;
     }
 
     return order;

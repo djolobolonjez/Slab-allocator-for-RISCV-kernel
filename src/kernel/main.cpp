@@ -40,21 +40,25 @@ int main() {
     thread_create(&getcThread, KernelConsole::consoleget, nullptr);
     thread_create(&TCB::mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, idle, nullptr);
+    Scheduler::idleThread->setName("idle");
+
 
     TCB::running = TCB::mainThread;
 
     putcThread->setPrivilege(1);
+    putcThread->setName("putc");
     getcThread->setPrivilege(1);
+    getcThread->setName("getc");
     TCB::mainThread->setPrivilege(1);
-
+    TCB::mainThread->setName("main");
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;
 
     thread_create(&TCB::usermainThread, user_wrapper, wrap);
     TCB::usermainThread->setPid(1);
+    TCB::usermainThread->setName("usermain");
 
-
-    TCB::usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
+    //TCB::usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
 
     while(!TCB::usermainThread->isFinished()){
         thread_dispatch();
@@ -68,7 +72,7 @@ int main() {
 
     putcThread->setFinished(true);
     getcThread->setFinished(true);
-    Scheduler::idleThread->setFinished(true);
+    //Scheduler::idleThread->setFinished(true);
 
     asm volatile ("csrw satp, zero");
 

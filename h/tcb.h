@@ -26,8 +26,12 @@ public:
     static TCB* usermainThread;
     static TCB* mainThread;
 
+    const char* name = "";
+
     static TCB* createThread(thread_t* handle, void(*start_routine)(void*), void* arg, void* stack_space, int id, bool start);  // creates the Thread Control Block for given thread handle
     static int startThread(thread_t* handle);
+
+    void setName(const char* _name) { this->name = _name; }
 
     bool isStarted() const { return started; }
 

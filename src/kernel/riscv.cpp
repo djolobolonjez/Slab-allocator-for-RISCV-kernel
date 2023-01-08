@@ -6,6 +6,8 @@
 #include "../../h/kernelcons.h"
 #include "../../h/kprint.h"
 #include "../../h/mmu.h"
+#include "../../h/slab.h"
+#include "../../h/printing.hpp"
 
 void Riscv::sppUser(void (*fn)(void*), void* arg) {
     uint64 ra;
@@ -111,6 +113,7 @@ void Riscv::trapHandler()  {
     asm volatile("mv %[value], a0" : [value] "=r"(number));
 
     uint64 cause = Riscv::r_scause();
+    uint64 ksepc = Riscv::r_sepc();
 
     if(cause == 0x09 || cause == 0x08){
 
@@ -177,7 +180,7 @@ void Riscv::trapHandler()  {
         else if (number == THREAD_DESTROY) {
             thread_t handle;
             asm volatile ("mv %[handle], a1" : [handle] "=r"(handle));
-            delete handle;
+            kmem_cache_free(TCB::cacheTCB, handle);
         }
         else if(number == SEM_OPEN){
             sem_t* handle;
@@ -269,29 +272,33 @@ void Riscv::trapHandler()  {
     }
 
     else if(cause == 12) {
-        uint64 vaddr = Riscv::r_stval();
+        uint64 vaddr = Riscv::r_sepc();
         uint64 sstatus = r_sstatus();
-
-        MMU::invalid(vaddr, MMU::PAGE_FAULT);
-
+        
         if (sstatus & SSTATUS_SPP)
-            MMU::pmap(vaddr, vaddr, MMU::ReadWriteExecute);
+            MMU::map(vaddr, MMU::ReadWriteExecute);
         else
-            MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
+            MMU::map(vaddr, MMU::UserReadWriteExecute);
     }
     else if (cause == 13 || cause == 15) {
         uint64 vaddr = Riscv::r_stval();
         uint64 status = Riscv::r_sstatus();
-
-        if (!(status & SSTATUS_SPP) && MMU::kspace(vaddr)) {
-            kprintString("Access violation!");
+        
+        if (status & SSTATUS_SPP) {
+            MMU::map(vaddr, MMU::ReadWriteExecute);
         }
         else {
-            MMU::invalid(vaddr, MMU::PAGE_FAULT);
-            MMU::pmap(vaddr, vaddr, MMU::UserReadWriteExecute);
+            if (MMU::kspace(vaddr)) {
+                kprintString("Access violation!\n");
+            }
+            else {
+                MMU::map(vaddr, MMU::UserReadWriteExecute);
+            }
         }
     }
     else {
         kprintInt(cause);
+        kprintString("\nsepc: ");
+        kprintInt(ksepc, 16);
     }
 }

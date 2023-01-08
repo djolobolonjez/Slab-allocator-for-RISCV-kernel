@@ -39,6 +39,8 @@ private:
     
     static uint64* kspbegin;
     static uint64* kspend;
+    
+    static void map(uint64 vaddr, EntryBits bits);
 
     static void pmap(uint64 start, uint64 end, EntryBits bits);
     static void punmap(uint64 start, uint64 end);
