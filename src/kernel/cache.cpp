@@ -1,6 +1,7 @@
 #include "../../h/cache.h"
 #include "../../h/SlabAllocator.h"
 #include "../../h/printing.hpp"
+#include "../../h/kprint.h"
 
 Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(void *)) {
     if (!CachePool::cacheTail) {
@@ -22,6 +23,7 @@ Cache::Cache(const char *name, size_t size, void (*ctor)(void *), void (*dtor)(v
 
     this->group = ObjectGroup::KERNEL_OBJECT;
     this->type = 0;
+    this->error = 0;
 
     this->slabOrder = getOrder(this->slotSize, this->objNum);
     this->slabSize = (1 << this->slabOrder) * BLOCK_SIZE;
@@ -128,8 +130,9 @@ void* Cache::cacheAlloc() {
 
     if (this->numOfSlabs > oldNumOfSlabs && this->numOfSlabs > 1)
         setShrink(0);
+
     void* objp = Slab::takeObject(this->slabsPartial);
-    if (this->slabsPartial->numOfFreeSlots == 0)
+    if (this->slabsPartial != nullptr && this->slabsPartial->numOfFreeSlots == 0)
         moveSlab(this->slabsPartial, Cache::FULL);
 
     return objp;
@@ -137,7 +140,7 @@ void* Cache::cacheAlloc() {
 
 void Cache::cacheFree(void* objp) {
     if(objp == nullptr) return;
-    Slab::putObject(objp);
+    Slab::putObject(objp, this);
 }
 
 int Cache::cacheShrink() {
@@ -181,34 +184,34 @@ void Cache::deallocSlabGroup(Slab *slab) {
 }
 
 void Cache::printInfo() {
-    printString("Cache name: ");
-    printString(this->name);
+    kprintString("Cache name: ");
+    kprintString(this->name);
 
     if (this->getGroup() == SMALL_MEMORY_BUFFER)
         printInt(this->slotSize);
 
-    printString("\n");
+    kprintString("\n");
 
-    printString("Object size: ");
-    printInt(this->slotSize);
-    printString("B\n");
+    kprintString("Object size: ");
+    kprintInt(this->slotSize);
+    kprintString("B\n");
 
-    printString("Cache size: ");
+    kprintString("Cache size: ");
     int cacheSize = (int)(this->numOfSlabs * this->slabSize) / BLOCK_SIZE;
-    printInt(cacheSize);
+    kprintInt(cacheSize);
 
     if (cacheSize == 1)
-        printString(" block\n");
+        kprintString(" block\n");
     else
-        printString(" blocks\n");
+        kprintString(" blocks\n");
 
-    printString("Number of slabs in cache: ");
-    printInt(this->numOfSlabs);
-    printString("\n");
+    kprintString("Number of slabs in cache: ");
+    kprintInt(this->numOfSlabs);
+    kprintString("\n");
 
-    printString("Number of objects in one slab: ");
-    printInt(this->objNum);
-    printString("\n");
+    kprintString("Number of objects in one slab: ");
+    kprintInt(this->objNum);
+    kprintString("\n");
 
     int freeCount = 0;
     int allocatedCount = 0;
@@ -226,11 +229,11 @@ void Cache::printInfo() {
     percentage /= 10;
 
     if (freeCount == 0)
-        printInt(0);
+        kprintInt(0);
     else
-        printInt(percentage);
+        kprintInt(percentage);
 
-    printString("% of cache is used.\n");
+    kprintString("% of cache is used.\n");
 }
 
 void Cache::objectCount(Slab* slab, int &free, int &allocated) {
@@ -247,4 +250,19 @@ void Cache::slabAlloc() {
         Slab::createSlab(this->slabOrder, this);
     else
         Slab::createBufferSlab(this->slabOrder, this);
+}
+
+int Cache::printErrorMessage() const {
+
+    if (error == -1) {
+        kprintString("No available space for buffer allocation!");
+    }
+    else if (error == -2) {
+        kprintString("No objects available!");
+    }
+    else if (error == -3) {
+        kprintString("Object doesn't belong to the given cache!");
+    }
+
+    return error;
 }

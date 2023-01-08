@@ -8,7 +8,7 @@ class Slab;
 
 class Cache {
 
-protected:
+private:
     enum SlabGroup {
         FULL,
         PARTIAL,
@@ -36,11 +36,15 @@ protected:
     size_t objNum; // number of objects in one slab
 
     size_t numOfSlabs;
+
     int type;
+    int error; // 0 - no errors
 
     static size_t getOrder(size_t slotSize, size_t& numSlots);
     static void deallocSlabGroup(Slab* slab);
     static void objectCount(Slab* slab, int& free, int& allocated);
+
+    void setError(int err) { this->error = err; }
 
     friend class CachePool;
     friend class Slab;
@@ -57,7 +61,9 @@ public:
     void* cacheAlloc();
     void cacheFree(void* objp);
     int cacheShrink();
+
     void printInfo();
+    int printErrorMessage() const;
 
     void slabAlloc();
 
@@ -68,7 +74,6 @@ public:
 
     void* operator new(size_t size);
     void operator delete(void* addr);
-
 };
 
 

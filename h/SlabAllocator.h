@@ -30,7 +30,7 @@ public:
 
     static void destroySlab(Slab* slab);
     static void* takeObject(Slab* slab);
-    static void putObject(void* objp);
+    static void putObject(void* objp, Cache* handle);
     static void putBuffer(void* objp);
 
 };

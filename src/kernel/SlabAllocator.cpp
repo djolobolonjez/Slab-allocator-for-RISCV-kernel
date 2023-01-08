@@ -1,8 +1,14 @@
 #include "../../h/buddy.h"
 #include "../../h/SlabAllocator.h"
+#include "../../h/kprint.h"
 
 void Slab::createSlab(size_t size, Cache* handle) {
     Slab* newSlab = (Slab*) Buddy::alloc(size);
+
+    if (newSlab == nullptr) {
+        handle->setError(-2 );
+        return;
+    }
 
     initSlab(newSlab, handle);
 
@@ -19,6 +25,8 @@ void Slab::createSlab(size_t size, Cache* handle) {
 
 void* Slab::takeObject(Slab* slab) {
 
+    if (!slab) return nullptr;
+
     void* objp = (uint8*)slab->mem + slab->free * slab->owner->slotSize;
     slab->free = slab->freeArray[slab->free];
 
@@ -27,11 +35,16 @@ void* Slab::takeObject(Slab* slab) {
     return objp;
 }
 
-void Slab::putObject(void *objp) {
+void Slab::putObject(void *objp, Cache* handle) {
     Slab* slabObject = (Slab*) objp;
 
     uint64 mask = ~0UL << 12;
     Slab* slabHeader = (Slab*)((uint64) slabObject & mask);
+
+    if (slabHeader->owner != handle) {
+        handle->setError(-3);
+        return;
+    }
 
     updateSlab(slabHeader);
 
@@ -69,10 +82,26 @@ void Slab::createBufferSlab(size_t size, Cache *handle) {
     int index = CachePool::getPowerOfTwo(handle->slotSize);
     Cache* slabCache = CachePool::getSlabCache(index);
 
+    if (!slabCache) {
+        handle->setError(-1);
+        return;
+    }
+
     Slab* newSlab = (Slab*) slabCache->cacheAlloc();
+
+    if (!newSlab) {
+        handle->setError(-1);
+        return;
+    }
+
     initSlab(newSlab, handle);
 
     newSlab->mem = Buddy::alloc(size);
+
+    if (newSlab->mem == nullptr) {
+        handle->setError(-1);
+        return;
+    }
 
     handle->moveFree(newSlab, Cache::PARTIAL);
 }
@@ -104,8 +133,8 @@ void Slab::putBuffer(void *objp) {
     uint64 mask = ~0UL << 12;
     uint8* bufferObject = (uint8*)((uint64)objp & mask);
 
-    for (unsigned i = 0; i < BUFFER_NUM; i++) {
-        Cache* bcache = CachePool::getBufferCache(i);
+    for (int buffIndex = 0; buffIndex < BUFFER_NUM; buffIndex++) {
+        Cache* bcache = CachePool::getBufferCache(buffIndex);
         if (!bcache) continue;
 
         Slab* curr = bcache->slabsPartial;
@@ -132,7 +161,10 @@ void Slab::putBuffer(void *objp) {
         }
     }
 
-    if (!slabHeader) return; // Exception: Invalid address!
+    if (!slabHeader) {
+        kprintString("Invalid address for buffer deallocation!");
+        return; // Exception: Invalid address!
+    }
 
     updateSlab(slabHeader);
 

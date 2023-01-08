@@ -61,4 +61,10 @@ kmem_cache_info(kmem_cache_t* cachep)
     cachep->printInfo();
 }
 
+int
+kmem_cache_error(kmem_cache_t* cachep)
+{
+    return cachep->printErrorMessage();
+}
+
 
