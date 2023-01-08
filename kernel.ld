@@ -11,6 +11,9 @@ SECTIONS
 
   .text : {
     *(.entry_os) . = ALIGN(0x1000);
+    PROVIDE(WRAP_START = .);
+    *(.wrapSection)
+    PROVIDE(WRAP_END = .);
     PROVIDE(KCODE_BEGIN = .);
     EXCLUDE_FILE (*user/*o *test/*o) *(.text .text.*)
     PROVIDE(KCODE_END = .);

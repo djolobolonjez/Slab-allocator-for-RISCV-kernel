@@ -1,11 +1,15 @@
 #include "../../h/mmu.h"
 #include "../../h/buddy.h"
 #include "../../h/system.h"
-#include "../../h/kprint.h"
+#include "../../h/tcb.h"
 
 uint64* MMU::rootTablePointer = nullptr;
 uint64* MMU::kspbegin = nullptr;
 uint64* MMU::kspend = nullptr;
+uint64* MMU::wrapbegin = nullptr;
+uint64* MMU::wrapend = nullptr;
+uint64* MMU::ubegin = nullptr;
+uint64* MMU::uend = nullptr;
 
 void MMU::MMUInit() {
     rootTablePointer = (uint64*) Buddy::alloc(0);
@@ -19,16 +23,22 @@ void MMU::MMUInit() {
     
     uint64* kcode_begin = (uint64*)&KCODE_BEGIN;
     uint64* kcode_end = (uint64*)&KCODE_END;
+
+    wrapbegin = (uint64*)&WRAP_START;
+    wrapend = (uint64*)&WRAP_END;
      
     kspbegin = (uint64*)&KDATA_BEGIN;
     kspend = (uint64*)&KDATA_END;
+
+    ubegin = (uint64*)&USER_CODE_START;
+    uend = (uint64*)&USER_CODE_END;
 
     pmap((uint64)user_code_start, (uint64)user_code_end, UserReadWriteExecute); // map user code section
     pmap((uint64)udata_begin, (uint64)udata_end, UserReadWriteExecute); // map user data section
     pmap((uint64)HEAP_START_ADDR, (uint64)HEAP_END_ADDR - 1, UserReadWriteExecute);
     
     // map kernel space
-    pmap((uint64)Buddy::KERNEL_START_ADDR, (uint64)Buddy::KERNEL_END_ADDR, ReadWriteExecute); 
+    pmap((uint64)Buddy::KERNEL_START_ADDR, (uint64)Buddy::KERNEL_END_ADDR - 1, ReadWriteExecute);
     pmap((uint64)kcode_begin, (uint64)kcode_end, ReadWriteExecute);
     pmap((uint64)kspbegin, (uint64)kspend, ReadWriteExecute);
     
@@ -73,7 +83,7 @@ void MMU::map(uint64 vaddr, EntryBits bits) {
             levelTwo[vpn[1]] = ((uint64) levelThree >> 2) | Valid;
         }
         else {
-            levelTwo = (uint64*) ((rootTablePointer[vpn[2]] >> 10) << 12);
+            levelTwo = PAGE_ALIGN(rootTablePointer[vpn[2]]);
             if (!(levelTwo[vpn[1]] & Valid)) {
                 levelThree = (uint64*) Buddy::alloc(0);
                 zeroInit(levelThree, descNum);
@@ -81,7 +91,7 @@ void MMU::map(uint64 vaddr, EntryBits bits) {
                 levelTwo[vpn[1]] = ((uint64) levelThree >> 2) | Valid;
             }
             else
-                levelThree = (uint64*) ((levelTwo[vpn[1]] >> 10) << 12);
+                levelThree = PAGE_ALIGN(levelTwo[vpn[1]]);
         }
 
     levelThree[vpn[0]] = pgDesc;
@@ -96,11 +106,11 @@ void MMU::invalid(uint64 vaddr, MMU_FLAGS flags) {
     if (!(rootTablePointer[vpn[2]] & Valid))
         return;
 
-    levelTwo = (uint64*)((rootTablePointer[vpn[2]] >> 10) << 12);
+    levelTwo = PAGE_ALIGN(rootTablePointer[vpn[2]]);
     if (!(levelTwo[vpn[1]] & Valid))
         return;
 
-    levelThree = (uint64*)((levelTwo[vpn[1]] >> 10) << 12);
+    levelThree = PAGE_ALIGN(levelTwo[vpn[1]]);
     uint64 pgDesc = 0;
     levelThree[vpn[0]] = pgDesc;
 
@@ -153,12 +163,12 @@ void MMU::MMUFinalize() {
 
     for (i = 0; i < descNum; i++) {
         if (pmtp[i] & Valid) {
-            uint64* levelTwo = (uint64*)((pmtp[i] >> 10) << 12);
+            uint64* levelTwo = PAGE_ALIGN(pmtp[i]);
             uint64 ii;
 
             for (ii = 0; ii < descNum; ii++) {
                 if (levelTwo[ii] & Valid) {
-                    uint64* levelThree = (uint64*) ((levelTwo[ii] >> 10) << 12);
+                    uint64* levelThree = PAGE_ALIGN(levelTwo[ii]);
                     Buddy::free(levelThree, 0);
                 }
             }
@@ -168,32 +178,3 @@ void MMU::MMUFinalize() {
 
     Buddy::free(pmtp, 0);
 }
-
-void MMU::printPMT() {
-    uint64* pmtp = rootTablePointer;
-    uint64 descNum = PAGE_SIZE / sizeof(uint64);
-
-    for (size_t i = 0; i < descNum; i++) {
-        if (pmtp[i] & Valid) {
-            kprintString("Level One Table:\n");
-            kprintInt((uint64)PAGE_ALIGN(pmtp[i]), 16);
-            kprintString("\n");
-            uint64* levelTwo = PAGE_ALIGN(pmtp[i]);
-            for (size_t j = 0; j < descNum; j++) {
-                if (levelTwo[j] & Valid) {
-                    kprintString("Level Two Table:\n");
-                    kprintInt((uint64)PAGE_ALIGN(levelTwo[j]), 16);
-                    kprintString("\n");
-                    uint64* levelThree = PAGE_ALIGN(levelTwo[j]);
-                    for (size_t k = 0; k < descNum; k++){
-                        kprintString("Level Three Descriptor:\n");
-                        kprintInt((uint64)PAGE_ALIGN(levelThree[k]), 16);
-                        kprintString("\n");
-                    }
-                }
-            }
-        }
-    }
-}
-
-

@@ -21,13 +21,6 @@ TCB::~TCB() {
         else Scheduler::head = next;
 
     }*/
-    // TODO - dodati dtor za TCB i za KernelSem!!
-
-   /*if (getPrivilege() == 0) delete[] stack;
-    else kfree(stack);
-
-    if(pid == 1 && funArg != nullptr) mem_free(funArg);*/
-
 }
 
 void* TCB::operator new(size_t size) { return kmem_cache_alloc(cacheTCB); }
@@ -80,7 +73,7 @@ TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *ar
     return thread;
 }
 
-void TCB::wrapper() {
+void __attribute__((section(".wrapSection"))) TCB::wrapper() {
 
     if(TCB::running->getPrivilege() == 0)
         Riscv::sppUser(TCB::running->fun, TCB::running->funArg);
@@ -105,7 +98,6 @@ TCB::TCB() {
     this->asleep = false;
     this->blocked = false;
     this->close = 0;
-    this->deleted = false;
     this->started = false;
     this->finished = false;
     this->holder = nullptr;
@@ -128,4 +120,13 @@ int TCB::startThread(thread_t *handle) {
     (*handle)->started = true;
 
     return 0;
+}
+
+void TCB::tcbDtor(void* arg) {
+    TCB* t = (TCB*)arg;
+
+    if (t->getPrivilege() == 0) delete[] t->stack;
+    else kfree(t->stack);
+
+    if (t->pid == 1 && t->funArg != nullptr) mem_free(t->funArg);
 }

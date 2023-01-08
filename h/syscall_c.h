@@ -40,6 +40,9 @@ thread_start(thread_t* handle);
 void
 thread_destroy(thread_t handle);
 
+void
+sem_destroy(sem_t handle);
+
 int 
 time_sleep(time_t);
 

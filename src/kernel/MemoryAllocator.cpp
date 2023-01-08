@@ -79,11 +79,6 @@ int MemoryAllocator::kmem_free(void* addr){
 
     if(!addr) return -1;
 
-    /*uint64 a = (uint64)addr;
-    kprintString("Free: ");
-    kprintInt(a, 16);
-    kprintString("\n");*/
-
     BlockHeader* curr = nullptr;
 
     if(!MemoryAllocator::fmem_head || (uint8*)addr < (uint8*)MemoryAllocator::fmem_head)

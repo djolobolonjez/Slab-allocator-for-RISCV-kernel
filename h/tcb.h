@@ -26,12 +26,10 @@ public:
     static TCB* usermainThread;
     static TCB* mainThread;
 
-    const char* name = "";
-
     static TCB* createThread(thread_t* handle, void(*start_routine)(void*), void* arg, void* stack_space, int id, bool start);  // creates the Thread Control Block for given thread handle
     static int startThread(thread_t* handle);
 
-    void setName(const char* _name) { this->name = _name; }
+    static void tcbDtor(void* arg);
 
     bool isStarted() const { return started; }
 
@@ -48,9 +46,6 @@ public:
 
     bool isAsleep() const { return asleep; }
     void setAsleep(bool sleep) { asleep = sleep; }
-
-    bool isDeleted() const { return deleted; }
-    void setDeleted(bool del) { deleted = del; }
 
     static void yield();  // save/restore the registers and dispatch
     static int suspend(); // suspends the thread execution
@@ -88,8 +83,6 @@ private:
 
     int pid;
 
-    bool deleted;
-
     void (*fun)(void*);
     void* funArg;
 
@@ -108,6 +101,7 @@ private:
     static void dispatch();  // interract with scheduler and call the context switch
     static void contextSwitch(Context* oldContext, Context* newContext);  // switch to the context of another thread
 
+    friend class MMU;
 };
 
 #endif // tcb_h

@@ -39,6 +39,10 @@ private:
     
     static uint64* kspbegin;
     static uint64* kspend;
+    static uint64* wrapbegin;
+    static uint64* wrapend;
+    static uint64* ubegin;
+    static uint64* uend;
     
     static void map(uint64 vaddr, EntryBits bits);
 
@@ -56,7 +60,6 @@ public:
     static bool kspace(uint64 vaddr);
     
     static void MMUFinalize();
-    static void printPMT();
 };
 
 

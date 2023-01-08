@@ -259,3 +259,10 @@ void thread_destroy(thread_t handle) {
     SYSCALL_REG_TWO(num, handle);
     ECALL
 }
+
+void sem_destroy(sem_t handle) {
+
+    uint64 num = SEM_DESTROY;
+    SYSCALL_REG_TWO(num, handle);
+    ECALL
+}

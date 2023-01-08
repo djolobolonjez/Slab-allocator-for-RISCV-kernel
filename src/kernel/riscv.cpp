@@ -182,6 +182,11 @@ void Riscv::trapHandler()  {
             asm volatile ("mv %[handle], a1" : [handle] "=r"(handle));
             kmem_cache_free(TCB::cacheTCB, handle);
         }
+        else if (number == SEM_DESTROY) {
+            sem_t handle;
+            asm volatile ("mv %[handle], a1" : [handle] "=r"(handle));
+            kmem_cache_free(KernelSem::cacheSem, handle);
+        }
         else if(number == SEM_OPEN){
             sem_t* handle;
             unsigned init;
@@ -274,11 +279,20 @@ void Riscv::trapHandler()  {
     else if(cause == 12) {
         uint64 vaddr = Riscv::r_sepc();
         uint64 sstatus = r_sstatus();
+
+        uint64* va = (uint64*)vaddr;
         
         if (sstatus & SSTATUS_SPP)
             MMU::map(vaddr, MMU::ReadWriteExecute);
-        else
-            MMU::map(vaddr, MMU::UserReadWriteExecute);
+        else {
+            if ((va >= MMU::wrapbegin && va < MMU::wrapend) || (va >= MMU::ubegin && va <= MMU::uend)) {
+                MMU::map(vaddr, MMU::UserReadWriteExecute);
+            }
+            else {
+                kprintString("ACCESS VIOLATION FROM USER! FORBIDDEN INSTRUCTION FETCH\n");
+            }
+        }
+
     }
     else if (cause == 13 || cause == 15) {
         uint64 vaddr = Riscv::r_stval();

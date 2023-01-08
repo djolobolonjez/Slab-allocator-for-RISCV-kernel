@@ -30,35 +30,37 @@ int main() {
     Riscv::ms_sstatus(  SSTATUS_SUM);
     asm ("csrw satp, %0" :: "r"(satp));
 
-    TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, nullptr);
+    TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, TCB::tcbDtor);
     KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
 
     KernelConsole* console = KernelConsole::getInstance();
     TCB *putcThread = nullptr, *getcThread = nullptr;
 
-    thread_create(&putcThread, KernelConsole::consoleput, nullptr);
-    thread_create(&getcThread, KernelConsole::consoleget, nullptr);
+    TCB::createThread(&putcThread, KernelConsole::consoleput, nullptr, kmalloc(DEFAULT_STACK_SIZE), 1, true);
+    TCB::createThread(&getcThread, KernelConsole::consoleget, nullptr, kmalloc(DEFAULT_STACK_SIZE), 1, true);
+
     thread_create(&TCB::mainThread, nullptr, nullptr);
     thread_create(&Scheduler::idleThread, idle, nullptr);
-    Scheduler::idleThread->setName("idle");
-
 
     TCB::running = TCB::mainThread;
 
     putcThread->setPrivilege(1);
-    putcThread->setName("putc");
     getcThread->setPrivilege(1);
-    getcThread->setName("getc");
     TCB::mainThread->setPrivilege(1);
-    TCB::mainThread->setName("main");
+
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;
 
-    thread_create(&TCB::usermainThread, user_wrapper, wrap);
-    TCB::usermainThread->setPid(1);
-    TCB::usermainThread->setName("usermain");
+    int usermainPid = 0; //TODO - Promeniti ovaj flag na 1 kada se testira iz sistemskog rezima
 
-    //TCB::usermainThread->setPrivilege(1); //TODO - Postaviti ovaj flag kada se testira iz sistemskog rezima
+    if (usermainPid != 0) {
+        TCB::createThread(&TCB::usermainThread, user_wrapper, wrap, kmalloc(DEFAULT_STACK_SIZE), 1, true);
+        TCB::usermainThread->setPrivilege(usermainPid);
+    }
+    else {
+        thread_create(&TCB::usermainThread, user_wrapper, wrap);
+        TCB::usermainThread->setPid(1);
+    }
 
     while(!TCB::usermainThread->isFinished()){
         thread_dispatch();
@@ -72,7 +74,7 @@ int main() {
 
     putcThread->setFinished(true);
     getcThread->setFinished(true);
-    //Scheduler::idleThread->setFinished(true);
+    Scheduler::idleThread->setFinished(true);
 
     asm volatile ("csrw satp, zero");
 

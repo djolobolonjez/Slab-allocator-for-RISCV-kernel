@@ -16,6 +16,9 @@ extern const void* KCODE_END;
 extern const void* KDATA_BEGIN;
 extern const void* KDATA_END;
 
+extern const void* WRAP_START;
+extern const void* WRAP_END;
+
 #define MEM_ALLOC 0x01
 #define MEM_FREE 0x02
 
@@ -24,7 +27,9 @@ extern const void* KDATA_END;
 #define THREAD_DISPATCH 0x13
 #define TCB_CREATE 0x14
 #define THREAD_START 0x15
+
 #define THREAD_DESTROY 0x16
+#define SEM_DESTROY 0x17
 
 #define SEM_OPEN 0x21
 #define SEM_CLOSE 0x22
