@@ -14,21 +14,7 @@ KernelSem::KernelSem() {
     this->val = 0;
 }
 
-KernelSem::~KernelSem() {
-    /*BlockedQueue* curr = KernelSem::head, *prev = nullptr;
-    while(curr){
-        prev = curr;
-        curr = curr->next;
-        TCB* data = prev->tcb;
-        data->setClose(1);
-        data->setHolder(nullptr);
-
-        Scheduler::put(data);
-        KernelSem::deleteNode(prev);
-    }
-
-    head = tail = nullptr;*/
-}
+KernelSem::~KernelSem() { }
 
 KernelSem* KernelSem::createSem(sem_t* pSem, unsigned int init_value) {
 
@@ -125,4 +111,19 @@ void KernelSem::operator delete[](void *addr)  { kmem_cache_free(cacheSem, addr)
 
 void KernelSem::semDestroy() {
     kmem_cache_destroy(KernelSem::cacheBlocked);
+}
+
+void KernelSem::semDtor(void* addr) {
+    KernelSem* sem = (KernelSem*) addr;
+    BlockedQueue* curr = sem->head, *prev = nullptr;
+       while(curr){
+           prev = curr;
+           curr = curr->next;
+           TCB* data = prev->tcb;
+           data->setClose(1);
+           data->setHolder(nullptr);
+
+           Scheduler::put(data);
+           KernelSem::deleteNode(prev);
+       }
 }

@@ -178,3 +178,12 @@ void MMU::MMUFinalize() {
 
     Buddy::free(pmtp, 0);
 }
+
+bool MMU::ufetch(uint64 vaddr) {
+    uint64* va = (uint64*)vaddr;
+    if ((va >= MMU::wrapbegin && va < MMU::wrapend)
+        || (va >= MMU::ubegin && va <= MMU::uend)) {
+        return true;
+    }
+    return false;
+}

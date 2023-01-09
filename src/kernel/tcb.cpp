@@ -57,17 +57,19 @@ void TCB::dispatch() {
 TCB* TCB::createThread(thread_t *handle, void (*start_routine)(void *), void *arg, void *stack_space, int id, bool start) {
 
     TCB* thread = (TCB*) kmem_cache_alloc(cacheTCB);
-    thread->stack = (start_routine != nullptr ? (uint64*)stack_space : nullptr);
-    thread->fun = start_routine;
-    thread->funArg = arg;
-    thread->pid = id;
-    thread->context = {(start_routine != nullptr ? (uint64)wrapper : 0),
-                       (start_routine != nullptr ? (uint64)&thread->stack[DEFAULT_STACK_SIZE/sizeof(uint64)] : 0)};
-
     *handle = thread;
-    if(start_routine != nullptr && start) {
-        Scheduler::put(thread);
-        thread->started = true;
+
+    if (thread) {
+        thread->stack = (start_routine != nullptr ? (uint64*)stack_space : nullptr);
+        thread->fun = start_routine;
+        thread->funArg = arg;
+        thread->pid = id;
+        thread->context = {(start_routine != nullptr ? (uint64)wrapper : 0),
+                           (start_routine != nullptr ? (uint64)&thread->stack[DEFAULT_STACK_SIZE/sizeof(uint64)] : 0)};
+        if(start_routine != nullptr && start) {
+            Scheduler::put(thread);
+            thread->started = true;
+        }
     }
 
     return thread;

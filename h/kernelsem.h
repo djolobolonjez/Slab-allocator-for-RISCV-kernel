@@ -24,6 +24,8 @@ public:
     static int deleteSem(KernelSem*);  // deletes a semaphore
     static void semDestroy();
 
+    static void semDtor(void* addr);
+
     static Cache* cacheSem;
 
     void* operator new(size_t size);

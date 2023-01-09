@@ -280,16 +280,20 @@ void Riscv::trapHandler()  {
         uint64 vaddr = Riscv::r_sepc();
         uint64 sstatus = r_sstatus();
 
-        uint64* va = (uint64*)vaddr;
-        
         if (sstatus & SSTATUS_SPP)
             MMU::map(vaddr, MMU::ReadWriteExecute);
         else {
-            if ((va >= MMU::wrapbegin && va < MMU::wrapend) || (va >= MMU::ubegin && va <= MMU::uend)) {
+            if (MMU::ufetch(vaddr)) {
                 MMU::map(vaddr, MMU::UserReadWriteExecute);
             }
             else {
                 kprintString("ACCESS VIOLATION FROM USER! FORBIDDEN INSTRUCTION FETCH\n");
+                kprintString("sepc: ");
+                kprintInt(ksepc, 16);
+                kprintString("\nRunning function: ");
+                kprintInt((uint64)TCB::running->fun, 16);
+                kprintString("\n");
+                TCB::suspend();
             }
         }
 
@@ -304,6 +308,7 @@ void Riscv::trapHandler()  {
         else {
             if (MMU::kspace(vaddr)) {
                 kprintString("Access violation!\n");
+                TCB::suspend();
             }
             else {
                 MMU::map(vaddr, MMU::UserReadWriteExecute);
@@ -311,8 +316,10 @@ void Riscv::trapHandler()  {
         }
     }
     else {
+        kprintString("scause: ");
         kprintInt(cause);
         kprintString("\nsepc: ");
         kprintInt(ksepc, 16);
+        kprintString("\n");
     }
 }

@@ -255,13 +255,13 @@ void Cache::slabAlloc() {
 int Cache::printErrorMessage() const {
 
     if (error == -1) {
-        kprintString("No available space for buffer allocation!");
+        kprintString("No available space for buffer allocation!\n");
     }
     else if (error == -2) {
-        kprintString("No objects available!");
+        kprintString("No objects available!\n");
     }
     else if (error == -3) {
-        kprintString("Object doesn't belong to the given cache!");
+        kprintString("Object doesn't belong to the given cache!\n");
     }
 
     return error;

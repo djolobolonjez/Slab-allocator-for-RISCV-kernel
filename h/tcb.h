@@ -100,8 +100,6 @@ private:
     static void wrapper(); // wrapper function for the thread body
     static void dispatch();  // interract with scheduler and call the context switch
     static void contextSwitch(Context* oldContext, Context* newContext);  // switch to the context of another thread
-
-    friend class MMU;
 };
 
 #endif // tcb_h

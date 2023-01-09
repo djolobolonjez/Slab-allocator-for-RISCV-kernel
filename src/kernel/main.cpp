@@ -31,7 +31,7 @@ int main() {
     asm ("csrw satp, %0" :: "r"(satp));
 
     TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, TCB::tcbDtor);
-    KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, nullptr);
+    KernelSem::cacheSem = kmem_cache_create("Semaphore Cache", sizeof(KernelSem), KernelSem::ctor, KernelSem::semDtor);
 
     KernelConsole* console = KernelConsole::getInstance();
     TCB *putcThread = nullptr, *getcThread = nullptr;

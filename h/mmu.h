@@ -58,6 +58,7 @@ public:
     static uint64* rootTablePointer;
     static void MMUInit();
     static bool kspace(uint64 vaddr);
+    static bool ufetch(uint64 vaddr);
     
     static void MMUFinalize();
 };
