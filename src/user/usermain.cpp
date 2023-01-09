@@ -159,11 +159,9 @@ void userMain() {
 }
 
 
-/*
 #include "../../h/syscall_c.h"
 #include "../../h/syscall_cpp.hpp"
 #include "../../h/printing.hpp"
-
 
 struct thread_data {
     int id;
@@ -225,7 +223,7 @@ private:
 };
 
 
-void userMain() {
+/*void userMain() {
     ForkThread thread(1);
 
     thread.start();
@@ -234,8 +232,6 @@ void userMain() {
         thread_dispatch();
     }
     printString("User main finished\n");
-
-}
-*/
+}*/
 
 

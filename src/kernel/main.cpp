@@ -27,7 +27,7 @@ int main() {
     uint64 rootPPN = ((uint64) MMU::rootTablePointer) >> 12;
     uint64 satp = (8UL << 60) | rootPPN;
 
-    Riscv::ms_sstatus(  SSTATUS_SUM);
+    Riscv::ms_sstatus(SSTATUS_SUM);
     asm ("csrw satp, %0" :: "r"(satp));
 
     TCB::cacheTCB = kmem_cache_create("TCB Cache", sizeof(TCB), TCB::ctor, TCB::tcbDtor);
@@ -51,7 +51,8 @@ int main() {
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;
 
-    int usermainPid = 0; //TODO - Promeniti ovaj flag na 1 kada se testira iz sistemskog rezima
+    int usermainPid = 1; //TODO - Promeniti ovaj flag na 1 kada se testira iz sistemskog rezima
+
 
     if (usermainPid != 0) {
         TCB::createThread(&TCB::usermainThread, user_wrapper, wrap, kmalloc(DEFAULT_STACK_SIZE), 1, true);

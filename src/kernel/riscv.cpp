@@ -288,20 +288,14 @@ void Riscv::trapHandler()  {
             }
             else {
                 kprintString("ACCESS VIOLATION FROM USER! FORBIDDEN INSTRUCTION FETCH\n");
-                kprintString("sepc: ");
-                kprintInt(ksepc, 16);
-                kprintString("\nRunning function: ");
-                kprintInt((uint64)TCB::running->fun, 16);
-                kprintString("\n");
                 TCB::suspend();
             }
         }
-
     }
     else if (cause == 13 || cause == 15) {
         uint64 vaddr = Riscv::r_stval();
         uint64 status = Riscv::r_sstatus();
-        
+
         if (status & SSTATUS_SPP) {
             MMU::map(vaddr, MMU::ReadWriteExecute);
         }

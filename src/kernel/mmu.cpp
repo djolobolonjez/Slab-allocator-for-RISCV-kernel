@@ -35,8 +35,7 @@ void MMU::MMUInit() {
 
     pmap((uint64)user_code_start, (uint64)user_code_end, UserReadWriteExecute); // map user code section
     pmap((uint64)udata_begin, (uint64)udata_end, UserReadWriteExecute); // map user data section
-    pmap((uint64)HEAP_START_ADDR, (uint64)HEAP_END_ADDR - 1, UserReadWriteExecute);
-    
+
     // map kernel space
     pmap((uint64)Buddy::KERNEL_START_ADDR, (uint64)Buddy::KERNEL_END_ADDR - 1, ReadWriteExecute);
     pmap((uint64)kcode_begin, (uint64)kcode_end, ReadWriteExecute);

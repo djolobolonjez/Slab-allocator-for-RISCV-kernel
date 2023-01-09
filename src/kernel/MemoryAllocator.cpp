@@ -1,7 +1,6 @@
 #include "../../h/MemoryAllocator.h"
 #include "../../h/mmu.h"
 #include "../../h/system.h"
-#include "../../h/kprint.h"
 
 MemoryAllocator::BlockHeader* MemoryAllocator::fmem_head = nullptr;
 int MemoryAllocator::init = 0;
@@ -36,7 +35,7 @@ void* MemoryAllocator::kmem_alloc(size_t size){
 
     if(!curr) return nullptr;
 
-    size_t remainder = curr->size - size*MEM_BLOCK_SIZE;
+    size_t remainder = curr->size - size * MEM_BLOCK_SIZE;
     if(remainder > sizeof(BlockHeader)) {
         curr->size = size * MEM_BLOCK_SIZE;
         size_t offset = sizeof(BlockHeader) + size * MEM_BLOCK_SIZE;
@@ -71,8 +70,21 @@ void* MemoryAllocator::kmem_alloc(size_t size){
     curr->next = nullptr;
     curr->prev = nullptr;
 
-    return (uint8*)curr + sizeof(BlockHeader);
+    uint8* addr = (uint8*)curr + sizeof(BlockHeader);
 
+    uint64 mask = ~(BLOCK_SIZE - 1);
+
+    uint64 start_page = (uint64)curr & mask;
+    uint64 end_page = (uint64)(addr + curr->size) & mask;
+
+    size_t pageNum = (end_page - start_page) / BLOCK_SIZE;
+
+    for (size_t i = 0; i <= pageNum; i++) {
+        uint64 vaddr = start_page + i * BLOCK_SIZE;
+        MMU::map(vaddr, MMU::UserReadWriteExecute);
+    }
+
+    return addr;
 }
 
 int MemoryAllocator::kmem_free(void* addr){
