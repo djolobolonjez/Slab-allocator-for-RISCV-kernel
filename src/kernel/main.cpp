@@ -51,7 +51,7 @@ int main() {
     user_main_* wrap = (user_main_*) mem_alloc(sizeof(user_main_));
     wrap->fn = &userMain;
 
-    int usermainPid = 1; //TODO - Promeniti ovaj flag na 1 kada se testira iz sistemskog rezima
+    int usermainPid = 0; //TODO - Promeniti ovaj flag na 1 kada se testira iz sistemskog rezima
 
 
     if (usermainPid != 0) {

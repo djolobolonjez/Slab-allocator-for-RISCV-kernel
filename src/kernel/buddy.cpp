@@ -54,6 +54,10 @@ int Buddy::buddyInit(void* space, int blockNum) {
     blocks[MAX_ORDER] = (FreeArea*) KERNEL_START_ADDR;
     blocks[MAX_ORDER]->next = nullptr;
 
+    int numBytes = (1 << MAX_ORDER) / sizeof(uint8*);
+    for (int i = 0; i < numBytes; i++)
+        bitmap[i] = 0;
+
     return 0;
 }
 

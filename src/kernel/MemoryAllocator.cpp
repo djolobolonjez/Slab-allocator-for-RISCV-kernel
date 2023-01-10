@@ -132,11 +132,10 @@ void MemoryAllocator::tryToUnmap(BlockHeader *addr) {
         start += BLOCK_SIZE;
     }
 
-    if (end % BLOCK_SIZE != 0) {
-        end &= mask;
-    }
+    end &= mask;
+    end -= BLOCK_SIZE;
 
-    if (end <= start) return; // Cannot free table entry
+    if (end < start) return; // Cannot free table entry
 
     MMU::punmap(start, end);
 }

@@ -94,13 +94,14 @@ void Slab::createBufferSlab(size_t size, Cache *handle) {
         return;
     }
 
-    initSlab(newSlab, handle);
-
     newSlab->mem = Buddy::alloc(size);
 
     if (newSlab->mem == nullptr) {
         handle->setError(-1);
         return;
+    }
+    else {    	
+    	initSlab(newSlab, handle);
     }
 
     handle->moveFree(newSlab, Cache::PARTIAL);

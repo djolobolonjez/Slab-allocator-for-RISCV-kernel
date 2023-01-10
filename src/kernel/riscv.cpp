@@ -288,6 +288,7 @@ void Riscv::trapHandler()  {
             }
             else {
                 kprintString("ACCESS VIOLATION FROM USER! FORBIDDEN INSTRUCTION FETCH\n");
+                kprintInt(vaddr, 16);
                 TCB::suspend();
             }
         }
