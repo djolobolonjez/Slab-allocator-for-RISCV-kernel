@@ -12,16 +12,7 @@ TCB* TCB::usermainThread = nullptr;
 
 uint64 TCB::timeSliceCounter = 0;
 
-TCB::~TCB() {
-
-    /*if(!isFinished()){
-        if(next) next->prev = prev;
-        else Scheduler::tail = prev;
-        if(prev) prev->next = next;
-        else Scheduler::head = next;
-
-    }*/
-}
+TCB::~TCB() { }
 
 void* TCB::operator new(size_t size) { return kmem_cache_alloc(cacheTCB); }
 void* TCB::operator new[](size_t size) { return kmem_cache_alloc(cacheTCB); }

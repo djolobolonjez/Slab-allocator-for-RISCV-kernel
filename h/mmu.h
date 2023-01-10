@@ -37,15 +37,18 @@ private:
         UserReadWriteExecute = Read | Write | Execute | User,
     };
     
-    static uint64* kspbegin;
-    static uint64* kspend;
-    static uint64* wrapbegin;
-    static uint64* wrapend;
-    static uint64* ubegin;
-    static uint64* uend;
-    
-    static void map(uint64 vaddr, EntryBits bits);
+    static uint64 kspbegin;
+    static uint64 kspend;
+    static uint64 wrapbegin;
+    static uint64 wrapend;
+    static uint64 user_begin;
+    static uint64 user_end;
 
+    static inline void sectionMap();
+
+    static uint64* pgalloc(int order);
+
+    static void map(uint64 vaddr, EntryBits bits);
     static void pmap(uint64 start, uint64 end, EntryBits bits);
     static void punmap(uint64 start, uint64 end);
 
