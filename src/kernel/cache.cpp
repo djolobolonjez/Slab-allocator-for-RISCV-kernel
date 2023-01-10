@@ -188,7 +188,7 @@ void Cache::printInfo() {
     kprintString(this->name);
 
     if (this->getGroup() == SMALL_MEMORY_BUFFER)
-        printInt(this->slotSize);
+        kprintInt(this->slotSize);
 
     kprintString("\n");
 
