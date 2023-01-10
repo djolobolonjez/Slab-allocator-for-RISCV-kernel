@@ -122,17 +122,18 @@ int MemoryAllocator::kmem_free(void* addr){
 
 void MemoryAllocator::tryToUnmap(BlockHeader *addr) {
     uint64 start = (uint64) addr;
+    uint64 mask = ~(BLOCK_SIZE - 1);
 
-    size_t offset = addr->size;
+    size_t offset = addr->size + sizeof(BlockHeader);
     uint64 end = (uint64)((uint8*)addr + offset);
 
     if (start % BLOCK_SIZE != 0) {
-        start &= ~(BLOCK_SIZE - 1);
+        start &= mask;
         start += BLOCK_SIZE;
     }
 
     if (end % BLOCK_SIZE != 0) {
-        end &= ~(BLOCK_SIZE - 1);
+        end &= mask;
     }
 
     if (end <= start) return; // Cannot free table entry
